@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\TestApp.csproj": {}
+    "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\TestApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\TestApp.csproj": {
+    "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\TestApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\TestApp.csproj",
+        "projectUniqueName": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\TestApp.csproj",
         "projectName": "TestApp",
-        "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\TestApp.csproj",
+        "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\TestApp.csproj",
         "packagesPath": "C:\\Users\\mathe\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\obj\\",
+        "outputPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mathe\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -44,6 +44,12 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "System.Management": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

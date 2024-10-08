@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "DkMi1NPOarI=",
+  "dgSpecHash": "+pH4HcP4Vbg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\TestApp\\TestApp.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\TrackIr-Detector\\TestApp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mathe\\.nuget\\packages\\system.codedom\\8.0.0\\system.codedom.8.0.0.nupkg.sha512",
+    "C:\\Users\\mathe\\.nuget\\packages\\system.management\\8.0.0\\system.management.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
