@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
@@ -17,84 +18,143 @@ class Program
     static int mainProcessId = -1;
 
     // The processes we want to track and start / stop
-    static string game = "RSI Launcher.exe";
-    static string trackIR = "TrackIR5.exe";
+    static string gameExe = "RSI Launcher.exe";
+    static string gameProcess = "RSI Launcher";
+    static string trackIRProcess = "TrackIR5";
     static string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe";
 
-    static void Main(string[] args)
+    static void Main()
     {
-        // Query for when the main process starts
-        string processStartQuery = $"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{game}'";
-        using (ManagementEventWatcher watcher = new(new WqlEventQuery(processStartQuery)))
+        Process[] existingProcess = Process.GetProcessesByName(gameProcess);
+        // If there is no process running, create a query and add a watcher for it. 
+        if (existingProcess.Length == 0)
         {
-            // Subscribe to the process start event
+            // Query for when the main process starts
+            string processStartQuery = $"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'";
+            using (ManagementEventWatcher watcher = new(new WqlEventQuery(processStartQuery)))
+            {
+                // Subscribe to the process start event
+                try
+                {
+                    watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
+                    watcher.Start();
+                    Console.WriteLine($"Listening for {gameExe} process events. Press Enter to exit...");
+                    Console.ReadLine();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    Console.ReadLine();
+                    return;
+                }
+            };
+        }
+        else
+        {
+            foreach (Process process in existingProcess)
+            {
+                try
+                {
+                    Console.WriteLine($"Already running {process.ProcessName} detected with ID: {process.Id} \n ");
+                    AddWatcherForProcessTermination(process.Id);
+                    Console.ReadLine();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return;
+                }
+            }
+        }
+    }
+    // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.
+    static void AddWatcherForProcessTermination(int processId)
+    {
+        // WMI query to detect process termination by Process ID
+        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = '{processId}'";
+        using (ManagementEventWatcher endWatcher = new(new WqlEventQuery(processEndQuery)))
+        {
             try
             {
-                watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
-                watcher.Start();
-                Console.WriteLine($"Listening for {game} process events. Press Enter to exit...");
-                Console.ReadLine();
+                // Subscribe to the process termination event
+                endWatcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
+                endWatcher.Start();
+                Console.WriteLine($"Monitoring termination of process with ID {processId}...");
+                trackedProcessIds.Add(processId);
+                StartTrackIR(trackIRPath);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
-                return;
+                Console.WriteLine($"Error: {ex.Message}");
             }
-        };
-
+        }
     }
+
+    // Monitor the process for when an instance is not detected upon launch.
     static void ProcessStarted(object sender, EventArrivedEventArgs e)
     {
-        ManagementBaseObject process = e.NewEvent["TargetInstance"] as ManagementBaseObject;
-        mainProcessId = Convert.ToInt32(process["ProcessId"]);
-
-        // Monitoring if its the first instance detected, then launching TrackIR5... 
-        if (!isFirstInstanceDetected)
+        using (ManagementBaseObject process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
         {
-            Console.WriteLine($"First process detected with ID: {mainProcessId} \n Not logging subsequent processes...");
-            // Mark that the first instance has been detected
-            isFirstInstanceDetected = true;
-            StartTrackIR(trackIRPath);
-        }
+            mainProcessId = Convert.ToInt32(process["ProcessId"]);
 
-        // Add the main process to the tracked process list 
-        trackedProcessIds.Add(mainProcessId);
+            // Monitoring if its the first instance detected, then launching TrackIR5... 
+            if (!isFirstInstanceDetected)
+            {
+                Console.WriteLine($"First process detected with ID: {mainProcessId} \n Not logging subsequent processes...");
+                // Mark that the first instance has been detected
+                isFirstInstanceDetected = true;
+                StartTrackIR(trackIRPath);
+            }
 
-        // Start watching for process termination events
-        MonitorProcessTermination();
+            // Add the main process to the tracked process list 
+            trackedProcessIds.Add(mainProcessId);
+
+            // Start watching for process termination events
+            MonitorProcessTermination();
+        };
     }
 
     // Monitor process termination events for the tracked process
     static void MonitorProcessTermination()
     {
-        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{game}'";
-        ManagementEventWatcher endWatcher = new ManagementEventWatcher(new WqlEventQuery(processEndQuery));
-
-        endWatcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
-        endWatcher.Start();
+        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'";
+        using (ManagementEventWatcher endWatcher = new ManagementEventWatcher(new WqlEventQuery(processEndQuery)))
+        {
+            try
+            {
+                endWatcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
+                endWatcher.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        };
     }
 
     // Called when a process in the system is terminated
     static void ProcessTerminated(object sender, EventArrivedEventArgs e)
     {
-        ManagementBaseObject process = e.NewEvent["TargetInstance"] as ManagementBaseObject;
-        int processId = Convert.ToInt32(process["ProcessId"]);
-
-        // Check if the terminated process is part of the tracked process tree
-        if (trackedProcessIds.Contains(processId))
+        using (ManagementBaseObject process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
         {
-            Console.WriteLine($"Process {processId} has been terminated.");
+            int processId = Convert.ToInt32(process["ProcessId"]);
 
-            // Remove the process from the tracked list and terminate TrackIR5 software
-            trackedProcessIds.Remove(processId);
-
-            if (trackedProcessIds.Count == 0)
+            // Check if the terminated process is part of the tracked process tree
+            if (trackedProcessIds.Contains(processId))
             {
-                Console.WriteLine("All processes in the tree have been terminated.");
-                TerminateTrackIR();
+                Console.WriteLine($"Process {processId} has been terminated.");
+
+                // Remove the process from the tracked list and terminate TrackIR5 software
+                trackedProcessIds.Remove(processId);
+
+                if (trackedProcessIds.Count == 0)
+                {
+                    Console.WriteLine("All processes in the tree have been terminated.");
+                    TerminateTrackIR();
+                    Main();
+                }
             }
-        }
+        };
     }
 
     // This method will be called after the first instance of the tracked process is detected
@@ -102,8 +162,15 @@ class Program
     {
         try
         {
-            Process.Start(programPath); // This assumes the installation will be done in the C drive on the default path.
-            Console.WriteLine("TrackIR started...");
+            Process[] existingProcess = Process.GetProcessesByName(trackIRProcess);
+            // Checking if there is already a process running
+            if (existingProcess.Length == 0)
+            {
+                Process.Start(programPath); // This assumes the app is installed on the C drive, default path.
+                Console.WriteLine($"{trackIRProcess} started...");
+            }
+            else
+                Console.WriteLine($"An instance of {trackIRProcess} is already running.");
         }
         catch (Exception ex)
         {
@@ -114,23 +181,46 @@ class Program
     // This method will be called when all processes in the tree are terminated
     static void TerminateTrackIR()
     {
-        Console.WriteLine("Terminating TrackIR5 software...");
         try
         {
-            Process[] processes = Process.GetProcessesByName(trackIR);
+            Console.WriteLine("Searching for TrackIR5 process...");
+            Process[] processes = Process.GetProcessesByName(trackIRProcess);
+
+            if (processes.Length == 0)
+            {
+                Console.WriteLine("No TrackIR5 processes found.");
+                return;
+            }
+
             foreach (Process process in processes)
             {
-                process.Kill();
-                Console.WriteLine($"Process {process.Id} has been terminated.");
-                if (trackedProcessIds.Count == 0)
+                try
                 {
-                    Console.WriteLine("All processes in the tree have been terminated.");
+                    process.Kill();
+                    // If tracking process IDs, remove them after termination
+                    trackedProcessIds.Remove(process.Id);
                 }
+                catch (Win32Exception win32Ex)
+                {
+                    Console.WriteLine($"Failed to kill process {process.Id} due to insufficient privileges: {win32Ex.Message}");
+                }
+                catch (InvalidOperationException invalidOpEx)
+                {
+                    Console.WriteLine($"Process {process.Id} has already exited: {invalidOpEx.Message}");
+                }
+                Console.WriteLine($"Process {process.Id} has been terminated.");
+            }
+
+            // Check if all tracked processes are terminated outside the loop
+            if (trackedProcessIds.Count == 0)
+            {
+                Console.WriteLine("All processes in the tree have been terminated.");
             }
         }
+
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to kill task: {ex}");
+            Console.WriteLine($"Failed to kill task: {ex.Message}");
         }
     }
 }
