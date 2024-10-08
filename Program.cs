@@ -16,26 +16,33 @@ class Program
     // The process ID of the first detected process (main process)
     static int mainProcessId = -1;
 
-    // The processes we want to track and start / stop 
-    static string Game = "RSI Launcher.exe";
-    static string TrackIR = "TrackIR5.exe";
-    static string TrackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe";
+    // The processes we want to track and start / stop
+    static string game = "RSI Launcher.exe";
+    static string trackIR = "TrackIR5.exe";
+    static string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe";
 
     static void Main(string[] args)
     {
-
         // Query for when the main process starts
-        string processStartQuery = $"SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{Game}'";
-        ManagementEventWatcher startWatcher = new ManagementEventWatcher(new WqlEventQuery(processStartQuery));
+        string processStartQuery = $"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{game}'";
+        using (ManagementEventWatcher watcher = new(new WqlEventQuery(processStartQuery)))
+        {
+            // Subscribe to the process start event
+            try
+            {
+                watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
+                watcher.Start();
+                Console.WriteLine($"Listening for {game} process events. Press Enter to exit...");
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                Console.ReadLine();
+                return;
+            }
+        };
 
-        // Subscribe to the process start event
-        startWatcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
-        startWatcher.Start();
-
-        Console.WriteLine($"Listening for {Game} process events. Press Enter to exit...");
-        Console.ReadLine();
-
-        startWatcher.Stop();
     }
     static void ProcessStarted(object sender, EventArrivedEventArgs e)
     {
@@ -48,7 +55,7 @@ class Program
             Console.WriteLine($"First process detected with ID: {mainProcessId} \n Not logging subsequent processes...");
             // Mark that the first instance has been detected
             isFirstInstanceDetected = true;
-            StartTrackIR(TrackIRPath);
+            StartTrackIR(trackIRPath);
         }
 
         // Add the main process to the tracked process list 
@@ -58,10 +65,10 @@ class Program
         MonitorProcessTermination();
     }
 
-    // Monitor process termination events for all tracked processes
+    // Monitor process termination events for the tracked process
     static void MonitorProcessTermination()
     {
-        string processEndQuery = "SELECT * FROM __InstanceDeletionEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'";
+        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{game}'";
         ManagementEventWatcher endWatcher = new ManagementEventWatcher(new WqlEventQuery(processEndQuery));
 
         endWatcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
@@ -108,21 +115,16 @@ class Program
     static void TerminateTrackIR()
     {
         Console.WriteLine("Terminating TrackIR5 software...");
-
         try
         {
-            Process[] processes = Process.GetProcessesByName(TrackIR);
+            Process[] processes = Process.GetProcessesByName(trackIR);
             foreach (Process process in processes)
             {
-
+                process.Kill();
                 Console.WriteLine($"Process {process.Id} has been terminated.");
-
                 if (trackedProcessIds.Count == 0)
                 {
-                    process.Kill();
-                    Console.WriteLine($"Process {process.ProcessName} (ID: {process.Id}) has been killed.");
                     Console.WriteLine("All processes in the tree have been terminated.");
-                    TerminateTrackIR();
                 }
             }
         }
