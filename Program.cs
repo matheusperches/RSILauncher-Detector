@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 class Program
 {
@@ -85,7 +86,7 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"AddWatcherForProcessTermination Error: {ex.Message}");
             }
         }
     }
@@ -100,7 +101,7 @@ class Program
             // Monitoring if its the first instance detected, then launching TrackIR5... 
             if (!isFirstInstanceDetected)
             {
-                Console.WriteLine($"First process detected with ID: {mainProcessId} \n Not logging subsequent processes...");
+                Console.WriteLine($"First process detected with ID: {mainProcessId} \nNot logging subsequent processes...");
                 // Mark that the first instance has been detected
                 isFirstInstanceDetected = true;
                 StartTrackIR(trackIRPath);
@@ -110,15 +111,15 @@ class Program
             trackedProcessIds.Add(mainProcessId);
 
             // Start watching for process termination events
-            MonitorProcessTermination();
+            MonitorProcessTermination(mainProcessId);
         };
     }
 
     // Monitor process termination events for the tracked process
-    static void MonitorProcessTermination()
+    static void MonitorProcessTermination(int processId)
     {
-        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'";
-        using (ManagementEventWatcher endWatcher = new ManagementEventWatcher(new WqlEventQuery(processEndQuery)))
+        string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = {processId}";
+        using (ManagementEventWatcher endWatcher = new(new WqlEventQuery(processEndQuery)))
         {
             try
             {
@@ -127,7 +128,7 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"MonitorProcessTermination Error: {ex.Message}");
             }
         };
     }
@@ -151,6 +152,10 @@ class Program
                 {
                     Console.WriteLine("All processes in the tree have been terminated.");
                     TerminateTrackIR();
+                    // Resetting variables
+                    isFirstInstanceDetected = false;
+                    mainProcessId = -1;
+                    trackedProcessIds = [];
                     Main();
                 }
             }
