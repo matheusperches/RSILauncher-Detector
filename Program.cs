@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.CodeDom;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Threading;
+using System.ServiceProcess;
+using System.Configuration.Install;
 using static System.Net.Mime.MediaTypeNames;
 
-class Program
+public static class Program
 {
     // A dictionary to track all processes in the tree
     static HashSet<int> trackedProcessIds = [];
@@ -22,7 +25,7 @@ class Program
     static string gameExe = "RSI Launcher.exe";
     static string gameProcess = "RSI Launcher";
     static string trackIRProcess = "TrackIR5";
-    static string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe";
+    static string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe"; // Assumes default installation path of TrackIR5
 
     static void Main()
     {
