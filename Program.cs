@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.CodeDom;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
-using System.Threading;
-using System.ServiceProcess;
-using System.Configuration.Install;
-using static System.Net.Mime.MediaTypeNames;
+using RSILauncherSetup;
 
 public static class Program
 {
+
     // A dictionary to track all processes in the tree
     static HashSet<int> trackedProcessIds = [];
 
@@ -26,9 +20,12 @@ public static class Program
     static string gameProcess = "RSI Launcher";
     static string trackIRProcess = "TrackIR5";
     static string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe"; // Assumes default installation path of TrackIR5
-
+    static ManualResetEvent resetEvent = new ManualResetEvent(false);
     static void Main()
     {
+        // Tries to create a new task, if none exists
+        TaskSchedulerSetup.CreateTask();
+
         Process[] existingProcess = Process.GetProcessesByName(gameProcess);
         // If there is no process running, create a query and add a watcher for it. 
         if (existingProcess.Length == 0)
@@ -43,12 +40,12 @@ public static class Program
                     watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
                     watcher.Start();
                     Console.WriteLine($"Listening for {gameExe} process events. Press Enter to exit...");
-                    Console.ReadLine();
+                    // Wait indefinitely until the watcher is disposed
+                    resetEvent.WaitOne(); // Block the main thread here until resetEvent.Set() is called
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    Console.ReadLine();
                     return;
                 }
             };
@@ -71,6 +68,7 @@ public static class Program
             }
         }
     }
+
     // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.
     static void AddWatcherForProcessTermination(int processId)
     {
