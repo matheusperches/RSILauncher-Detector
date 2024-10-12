@@ -5,10 +5,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\apps\\rsilauncher-detector\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\apps\\rsilauncher-detector\\createtaskscheduler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:createtaskscheduler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -28,23 +24,10 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\RSILauncher-Detector\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAAgwC8AAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-08T00:35:19.888Z",
               "IsPinned": true,
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "CreateTaskScheduler.cs",
-              "DocumentMoniker": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\RSILauncher-Detector\\CreateTaskScheduler.cs",
-              "RelativeDocumentMoniker": "CreateTaskScheduler.cs",
-              "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\RSILauncher-Detector\\CreateTaskScheduler.cs",
-              "RelativeToolTip": "CreateTaskScheduler.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-11T21:57:31.341Z",
               "EditorCaption": ""
             }
           ]

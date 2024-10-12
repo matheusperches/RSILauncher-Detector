@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "xry46bSLF7I=",
+  "dgSpecHash": "z6wc/JQjJjk=",
   "success": true,
   "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\Apps\\RSILauncher-Detector\\RSILauncherDetector.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mathe\\.nuget\\packages\\core.system.configuration.install\\1.1.0\\core.system.configuration.install.1.1.0.nupkg.sha512",
+    "C:\\Users\\mathe\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.10\\microsoft.net.illink.tasks.8.0.10.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\microsoft.win32.registry\\5.0.0\\microsoft.win32.registry.5.0.0.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
@@ -21,10 +22,7 @@
     "C:\\Users\\mathe\\.nuget\\packages\\system.security.principal.windows\\5.0.0\\system.security.principal.windows.5.0.0.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\system.serviceprocess.servicecontroller\\8.0.1\\system.serviceprocess.servicecontroller.8.0.1.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\system.windows.extensions\\4.7.0\\system.windows.extensions.4.7.0.nupkg.sha512",
-    "C:\\Users\\mathe\\.nuget\\packages\\taskscheduler\\2.11.0\\taskscheduler.2.11.0.nupkg.sha512",
-    "C:\\Users\\mathe\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.10\\microsoft.netcore.app.runtime.win-x64.8.0.10.nupkg.sha512",
-    "C:\\Users\\mathe\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.10\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.10.nupkg.sha512",
-    "C:\\Users\\mathe\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.10\\microsoft.aspnetcore.app.runtime.win-x64.8.0.10.nupkg.sha512"
+    "C:\\Users\\mathe\\.nuget\\packages\\taskscheduler\\2.11.0\\taskscheduler.2.11.0.nupkg.sha512"
   ],
   "logs": []
 }
