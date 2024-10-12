@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RSILauncherDetector")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d38f3fee42f6cf021879ea97ad683bbf35a28e5d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b79a22ec268a052f0e63b318cb7c4e06b6f1b4c6")]
 [assembly: System.Reflection.AssemblyProductAttribute("RSILauncherDetector")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RSILauncherDetector")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

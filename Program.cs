@@ -11,7 +11,7 @@ namespace RSILauncherDetector
     {
 
         // A dictionary to track all processes in the tree
-        static HashSet<int> trackedProcessIds = [];
+        static readonly HashSet<int> trackedProcessIds = [];
 
         // Flag to track whether the first instance has been detected
         static bool isFirstInstanceDetected = false;
@@ -24,25 +24,38 @@ namespace RSILauncherDetector
         static readonly string gameProcess = "RSI Launcher";
         static readonly string trackIRProcess = "TrackIR5";
         static readonly string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe"; // Assumes default installation path of TrackIR5
+
+        // Keeping the application alive
         static readonly ManualResetEvent resetEvent = new(false);
-        static void Main()
+
+        // Maintaining a list of watchers
+        private static List<ManagementEventWatcher> watchers = [];
+
+        public static void Main()
         {
             // Tries to create a new task, if none exists
             TaskSchedulerSetup.CreateTask();
 
+            StartScanning();
+            
+            resetEvent.WaitOne(); // Block the main thread here
+        }
+
+        private static void StartScanning()
+        {
             Process[] existingProcess = Process.GetProcessesByName(gameProcess);
             // If there is no process running, create a query and add a watcher for it. 
             if (existingProcess.Length == 0)
             {
                 // Query for when the main process starts
-                string processStartQuery = $"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'";
-                using (ManagementEventWatcher watcher = new(new WqlEventQuery(processStartQuery)))
+                using (ManagementEventWatcher watcher = new(new WqlEventQuery($"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'")))
                 {
                     // Subscribe to the process start event
                     try
                     {
                         watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
                         watcher.Start();
+                        watchers.Add(watcher);
                         DebugLogger.Log($"Listening for {gameExe} process events. Press Enter to exit...");
                     }
                     catch (Exception ex)
@@ -68,20 +81,20 @@ namespace RSILauncherDetector
                     }
                 }
             }
-            resetEvent.WaitOne(); // Block the main thread here until resetEvent.Set() is called
+            Array.Clear(existingProcess);
         }
 
         // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.
-        static void AddWatcherForProcessTermination(int processId)
+        private static void AddWatcherForProcessTermination(int processId)
         {
             // WMI query to detect process termination by Process ID
-            string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = '{processId}'";
-            using ManagementEventWatcher watcher = new(new WqlEventQuery(processEndQuery));
+            using ManagementEventWatcher watcher = new(new WqlEventQuery($"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = '{processId}'"));
             try
             {
                 // Subscribe to the process termination event
                 watcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
                 watcher.Start();
+                watchers.Add(watcher);
                 DebugLogger.Log($"Monitoring termination of process with ID {processId}...");
                 trackedProcessIds.Add(processId);
                 StartTrackIR(trackIRPath);
@@ -93,7 +106,7 @@ namespace RSILauncherDetector
         }
 
         // Monitor the process for when an instance is not detected upon launch.
-        static void ProcessStarted(object sender, EventArrivedEventArgs e)
+        private static void ProcessStarted(object sender, EventArrivedEventArgs e)
         {
             using (ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
             {
@@ -119,15 +132,15 @@ namespace RSILauncherDetector
         }
 
         // Monitor process termination events for the tracked process
-        static void MonitorProcessTermination(int processId)
+        private static void MonitorProcessTermination(int processId)
         {
-            string processEndQuery = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = {processId}";
-            using (ManagementEventWatcher endWatcher = new(new WqlEventQuery(processEndQuery)))
+            using (ManagementEventWatcher endWatcher = new(new WqlEventQuery($"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = {processId}")))
             {
                 try
                 {
                     endWatcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
                     endWatcher.Start();
+                    watchers.Add(endWatcher);
                 }
                 catch (Exception ex)
                 {
@@ -137,7 +150,7 @@ namespace RSILauncherDetector
         }
 
         // Called when a process in the system is terminated
-        static void ProcessTerminated(object sender, EventArrivedEventArgs e)
+        private static void ProcessTerminated(object sender, EventArrivedEventArgs e)
         {
             using (ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
             {
@@ -160,8 +173,9 @@ namespace RSILauncherDetector
                             // Resetting variables
                             isFirstInstanceDetected = false;
                             mainProcessId = -1;
-                            trackedProcessIds = [];
-                            //Main();
+                            trackedProcessIds.Clear();
+                            CleanupWatchers();
+                            StartScanning();
                         }
                     }
                 }
@@ -169,7 +183,7 @@ namespace RSILauncherDetector
         }
 
         // This method will be called after the first instance of the tracked process is detected
-        static void StartTrackIR(string programPath)
+        private static void StartTrackIR(string programPath)
         {
             try
             {
@@ -190,7 +204,7 @@ namespace RSILauncherDetector
         }
 
         // This method will be called when all processes in the tree are terminated
-        static void TerminateTrackIR()
+        private static void TerminateTrackIR()
         {
             try
             {
@@ -209,7 +223,7 @@ namespace RSILauncherDetector
                     {
                         process.Kill();
                         // If tracking process IDs, remove them after termination
-                        trackedProcessIds.Remove(process.Id);
+                        trackedProcessIds.Clear();
                     }
                     catch (Win32Exception win32Ex)
                     {
@@ -221,12 +235,6 @@ namespace RSILauncherDetector
                     }
                     DebugLogger.Log($"Process {process.Id} has been terminated.");
                 }
-
-                // Check if all tracked processes are terminated outside the loop
-                if (trackedProcessIds.Count == 0)
-                {
-                    DebugLogger.Log("All processes in the tree have been terminated.");
-                }
             }
 
             catch (Exception ex)
@@ -234,7 +242,19 @@ namespace RSILauncherDetector
                 DebugLogger.Log($"Failed to kill task: {ex.Message}");
             }
         }
+        private static void CleanupWatchers()
+        {
+            foreach (var watcher in watchers)
+            {
+                watcher.EventArrived -= ProcessTerminated; // Unsubscribe the event handler
+                watcher.Stop();
+                watcher.Dispose();
+            }
+            watchers.Clear(); // Clear the list after disposing
+            GC.Collect();
+        }
     }
+
     public static class DebugLogger
     {
         [System.Diagnostics.Conditional("DEBUG")]
