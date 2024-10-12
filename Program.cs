@@ -1,7 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
+using System.Security.Principal;
 using RSILauncherDetectorSetup;
 
 namespace RSILauncherDetector
@@ -17,7 +19,7 @@ namespace RSILauncherDetector
         static bool isFirstInstanceDetected = false;
 
         // The process ID of the first detected process (main process)
-        static int mainProcessId = -1;
+        static int firstProcessID = -1;
 
         // The processes we want to track and start / stop
         static readonly string gameExe = "RSI Launcher.exe";
@@ -29,7 +31,7 @@ namespace RSILauncherDetector
         static readonly ManualResetEvent resetEvent = new(false);
 
         // Maintaining a list of watchers
-        private static List<ManagementEventWatcher> watchers = [];
+        private static readonly List<ManagementEventWatcher> watchers = [];
 
         public static void Main()
         {
@@ -37,7 +39,7 @@ namespace RSILauncherDetector
             TaskSchedulerSetup.CreateTask();
 
             StartScanning();
-            
+
             resetEvent.WaitOne(); // Block the main thread here
         }
 
@@ -71,7 +73,6 @@ namespace RSILauncherDetector
                 {
                     try
                     {
-                        DebugLogger.Log($"Already running {process.ProcessName} detected with ID: {process.Id} \n ");
                         AddWatcherForProcessTermination(process.Id);
                     }
                     catch (Exception ex)
@@ -95,9 +96,15 @@ namespace RSILauncherDetector
                 watcher.EventArrived += new EventArrivedEventHandler(ProcessTerminated);
                 watcher.Start();
                 watchers.Add(watcher);
-                DebugLogger.Log($"Monitoring termination of process with ID {processId}...");
                 trackedProcessIds.Add(processId);
-                StartTrackIR(trackIRPath);
+
+                // If first instance detected, launch TrackIR5... 
+                if (!isFirstInstanceDetected)
+                {
+                    isFirstInstanceDetected = true; // Mark that the first instance has been detected, this block will only be executed once
+                    DebugLogger.Log($"Monitoring termination of process with ID: {processId} \nNot logging subsequent processes...");
+                    StartTrackIR(trackIRPath);
+                }
             }
             catch (Exception ex)
             {
@@ -112,21 +119,20 @@ namespace RSILauncherDetector
             {
                 if (process != null)
                 {
-                    mainProcessId = Convert.ToInt32(process["ProcessId"]);
+                    firstProcessID = Convert.ToInt32(process["ProcessId"]);
 
                     // Monitoring if its the first instance detected, then launching TrackIR5... 
                     if (!isFirstInstanceDetected)
                     {
-                        DebugLogger.Log($"First process detected with ID: {mainProcessId} \nNot logging subsequent processes..."); 
+                        isFirstInstanceDetected = true; // Mark that the first instance has been detected
+                        DebugLogger.Log($"First process detected with ID: {firstProcessID} \nNot logging subsequent processes..."); 
                         StartTrackIR(trackIRPath);
                     }
-                    else
-                        isFirstInstanceDetected = true; // Mark that the first instance has been detected
 
                     // Add the main process to the tracked process list 
-                    trackedProcessIds.Add(mainProcessId);
+                    trackedProcessIds.Add(firstProcessID);
                     // Start watching for process termination events
-                    MonitorProcessTermination(mainProcessId);
+                    MonitorProcessTermination(firstProcessID);
                 }
             };
         }
@@ -172,7 +178,7 @@ namespace RSILauncherDetector
                             TerminateTrackIR();
                             // Resetting variables
                             isFirstInstanceDetected = false;
-                            mainProcessId = -1;
+                            firstProcessID = -1;
                             trackedProcessIds.Clear();
                             CleanupWatchers();
                             StartScanning();
@@ -191,8 +197,14 @@ namespace RSILauncherDetector
                 // Checking if there is already a process running
                 if (existingProcess.Length == 0)
                 {
-                    Process.Start(programPath);
-                    DebugLogger.Log($"{trackIRProcess} started...");
+                    using (Process trackirProc = new())
+                    {
+                        trackirProc.StartInfo.FileName = programPath;
+                        trackirProc.StartInfo.WorkingDirectory = Path.GetDirectoryName(programPath);
+                        trackirProc.StartInfo.UseShellExecute = false;
+                        trackirProc.Start();
+                        DebugLogger.Log($"{trackIRProcess} started...");
+                    };
                 }
                 else
                     DebugLogger.Log($"An instance of {trackIRProcess} is already running.");
