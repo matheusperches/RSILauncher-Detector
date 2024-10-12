@@ -30,7 +30,7 @@ namespace RSILauncherDetectorSetup
                 TaskDefinition taskDef = taskService.NewTask();
 
                 // General properties
-                taskDef.RegistrationInfo.Description = "Launch RSILauncherDetector at startup with admin privileges";
+                taskDef.RegistrationInfo.Description = "Launch RSILauncherDetector at startup";
                 taskDef.Principal.LogonType = TaskLogonType.InteractiveToken;
                 taskDef.Principal.RunLevel = TaskRunLevel.LUA; // Run as default
                 taskDef.Settings.StopIfGoingOnBatteries = false;
@@ -39,7 +39,7 @@ namespace RSILauncherDetectorSetup
                 // Disable idle conditions
                 taskDef.Settings.IdleSettings.StopOnIdleEnd = false;
                 taskDef.Settings.IdleSettings.RestartOnIdle = false;
-                taskDef.Settings.RunOnlyIfIdle = false;  // Disable running only if idle
+                taskDef.Settings.RunOnlyIfIdle = false;
 
                 // Trigger at logon
                 LogonTrigger logonTrigger = new()
@@ -56,7 +56,7 @@ namespace RSILauncherDetectorSetup
                     // Register the task
                     taskService.RootFolder.RegisterTaskDefinition(taskName, taskDef);
                     DebugLogger.Log($"Task '{taskName}' created successfully.");
-                    RestartWithRegularPrivileges();
+                    TriggerTaskExecution();
                 }
             }
             catch (Exception ex)
@@ -88,7 +88,7 @@ namespace RSILauncherDetectorSetup
                 DebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
             }
         }
-        public static void RestartWithRegularPrivileges()
+        public static void TriggerTaskExecution()
         {
             try
             {
