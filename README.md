@@ -54,7 +54,7 @@ public static void CreateTask()
         TaskDefinition taskDef = taskService.NewTask();
 
         // General properties
-        taskDef.RegistrationInfo.Description = "Launch RSILauncherDetector at startup with admin privileges";
+        taskDef.RegistrationInfo.Description = "Launch RSILauncherDetector";
         taskDef.Principal.LogonType = TaskLogonType.InteractiveToken;
         taskDef.Principal.RunLevel = TaskRunLevel.LUA; // Run as default
         taskDef.Settings.StopIfGoingOnBatteries = false;
