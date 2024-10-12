@@ -92,17 +92,15 @@ namespace RSILauncherDetectorSetup
         {
             try
             {
-                using (TaskService ts = new TaskService())
+                using TaskService ts = new();
+                Microsoft.Win32.TaskScheduler.Task task = ts.FindTask(taskName);
+                if (task != null)
                 {
-                    Microsoft.Win32.TaskScheduler.Task task = ts.FindTask(taskName);
-                    if (task != null)
-                    {
-                        task.Run(); // Starts the task
-                        Console.WriteLine($"Task '{taskName}' started successfully.");
-                    }
-
-                    Environment.Exit(0); // Close the current exe
+                    task.Run(); // Starts the task
+                    Console.WriteLine($"Task '{taskName}' started successfully.");
                 }
+
+                Environment.Exit(0); // Close the current exe
             }
             catch (Exception ex)
             {
