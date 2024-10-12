@@ -1,4 +1,4 @@
-# TrackIr-Detector
+# RSILauncherDetector
  - A background app that automatically launches TrackIR5 software when the RSI Launcher is opened, and closed when RSI Launcher is closed.
  - WMI Event based. This means little to none CPU usage.
  - Creates a task scheduler for you that automatically launches this app when you boot Windows.
