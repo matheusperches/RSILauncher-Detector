@@ -29,8 +29,11 @@ public static void Main()
 
     StartScanning();
 
-    resetEvent.WaitOne(); // Block the main thread here to prevent the app from shutting down
-}         
+    // Subscribe to system power mode change events
+    SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
+    resetEvent.WaitOne(); // Block the main thread here
+}    
 ```
 
 - Creating the task 
