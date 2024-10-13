@@ -5,8 +5,8 @@
 
 
    ## Installation Guide
-   - Download the [Release](https://github.com/matheusperches/RSILauncher-Detector/tree/main/Release) folder.
-   - Put the file somewhere you won't change. I recommend the documents folder.
+   - Download the [ZIP](https://github.com/matheusperches/RSILauncher-Detector/tree/main/Release).
+   - Extract the file somewhere you won't move. I recommend the documents folder.
    - Run the app and allow the UAC prompt. It will only prompt once for the task creation.
    - You can see it running in the background in the Task Manager -> Search for RSILauncherDetector.
    - Note: This program assumes the default installation path for TrackIR5. If there is a demand for it, I can implement a different functionality for finding your installation path.
