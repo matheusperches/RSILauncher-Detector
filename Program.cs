@@ -1,9 +1,8 @@
-﻿using System.Collections;
+﻿using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
-using System.Security.Principal;
 using RSILauncherDetectorSetup;
 
 namespace RSILauncherDetector
@@ -39,6 +38,9 @@ namespace RSILauncherDetector
             TaskSchedulerSetup.CreateTask();
 
             StartScanning();
+
+            // Subscribe to system power mode change events
+            SystemEvents.PowerModeChanged += OnPowerModeChanged;
 
             resetEvent.WaitOne(); // Block the main thread here
         }
@@ -83,6 +85,21 @@ namespace RSILauncherDetector
                 }
             }
             Array.Clear(existingProcess);
+        }
+
+        private static void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                Console.WriteLine("System resumed from sleep, restarting event watchers...");
+                RestartEventWatchers();
+            }
+        }
+
+        private static void RestartEventWatchers()
+        {
+            CleanupWatchers(); // Stop and clear previous watchers
+            StartScanning();   // Restart the watchers
         }
 
         // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.

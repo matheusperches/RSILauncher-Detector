@@ -59,6 +59,10 @@
               "version": "[8.0.10, )",
               "autoReferenced": true
             },
+            "Microsoft.Windows.Compatibility": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
             "System.Management": {
               "target": "Package",
               "version": "[8.0.0, )"

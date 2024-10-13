@@ -1,2 +1,3 @@
 C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\RSILauncherDetector.pdb
+C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\sni.dll
 C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\RSILauncherDetector.exe
