@@ -46,7 +46,7 @@ namespace RSILauncherDetector
             resetEvent.WaitOne(); // Block the main thread here
         }
 
-        public static void StartScanning()
+        public static bool StartScanning()
         {
             Process[] existingProcess = Process.GetProcessesByName(gameProcess);
             // If there is no process running, create a query and add a watcher for it. 
@@ -66,7 +66,7 @@ namespace RSILauncherDetector
                     catch (Exception ex)
                     {
                         DebugLogger.Log(ex.ToString());
-                        return;
+                        return false;
                     }
                 };
             }
@@ -81,11 +81,12 @@ namespace RSILauncherDetector
                     catch (Exception ex)
                     {
                         DebugLogger.Log(ex.ToString());
-                        return;
+                        return false;
                     }
                 }
             }
             Array.Clear(existingProcess);
+            return true;
         }
         public static void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
         {
