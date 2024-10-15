@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Principal;
+using static RSILauncherDetector.Interfaces.RSILauncherDetector;
 
 namespace RSILauncherDetector.Components
 {
@@ -17,7 +18,7 @@ namespace RSILauncherDetector.Components
                 using TaskService taskService = new();
                 if (taskService.FindTask(taskName) != null)
                 {
-                    DebugLogger.Log($"Task '{taskName}' already exists. Skipping...");
+                    IDebugLogger.Log($"Task '{taskName}' already exists. Skipping...");
                     return;
                 }
 
@@ -54,13 +55,13 @@ namespace RSILauncherDetector.Components
 
                     // Register the task
                     taskService.RootFolder.RegisterTaskDefinition(taskName, taskDef);
-                    DebugLogger.Log($"Task '{taskName}' created successfully.");
+                    IDebugLogger.Log($"Task '{taskName}' created successfully.");
                     TriggerTaskExecution();
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"Failed to create task: {ex.Message}");
+                IDebugLogger.Log($"Failed to create task: {ex.Message}");
             }
         }
         public static bool IsRunningAsAdmin()
@@ -84,7 +85,7 @@ namespace RSILauncherDetector.Components
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
+                IDebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
             }
         }
         public static void TriggerTaskExecution()
@@ -103,7 +104,7 @@ namespace RSILauncherDetector.Components
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
+                IDebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
             }
         }
     }

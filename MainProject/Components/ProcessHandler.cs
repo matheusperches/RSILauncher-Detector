@@ -1,52 +1,42 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Microsoft.Win32;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
-using System.Reflection;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using static RSILauncherDetector.Interfaces.RSILauncherDetector;
+using Components = RSILauncherDetector.Components;
 
 namespace RSILauncherDetector.Components
 {
 
     [SupportedOSPlatform("windows")]
     public class ProcessHandler(
-        Interfaces.RSILauncherDetector.IProcessManager processManager, 
-        Interfaces.RSILauncherDetector.IWatcherFactory watcherFactory, 
-        Interfaces.RSILauncherDetector.IProcessTerminationWatcher processTerminationWatcher, 
-        Interfaces.RSILauncherDetector.ITrackIRController trackIRController,
-        Interfaces.RSILauncherDetector.IWatcherManager watcherManager,
-        string trackIRPath
-        )
+    string launcherProcessName,
+    string launcherExeName,
+    string trackIRPath,
+    string trackIRProcess
+    )
     {
-        private readonly IProcessManager processManager = processManager;
-        private readonly IWatcherFactory watcherFactory = watcherFactory;
-        private readonly IProcessTerminationWatcher processTerminationWatcher = processTerminationWatcher;
-        private readonly List<IEventWatcher> watchers = [];
-        private readonly ITrackIRController trackIRController = trackIRController;
-        private readonly IWatcherManager watcherManager = watcherManager;
+        // Declare private fields for dependencies
+        private readonly Components.WatcherFactory watcherFactory = new();
+        private readonly Components.ProcessTerminationWatcher processTerminationWatcher = new();
+        private readonly Components.TrackIRController trackIRController = new();
+        private readonly Components.WatcherCleaner watcherCleaner = new();
+
+        // Other parameters
+        private readonly string launcherProcessName = launcherProcessName;
+        private readonly string launcherExeName = launcherExeName;
         private readonly string trackIRPath = trackIRPath;
+        private readonly string trackIRProcess = trackIRProcess;
 
-        // A dictionary to track all processes in the tree
-        private readonly HashSet<int> trackedProcessIds = [];
-
-        // New fields for gameProcess and gameExe
-        public required string launcherProcessName;
-        public required string launcherExeName;
-
-        public readonly string trackIRProcess = "TrackIR5";
+        private readonly List<IEventWatcher> watchers = []; // A list of event watchrs
+        private readonly HashSet<int> trackedProcessIds = []; // A dictionary to track all processes in the tree
 
         // Flag and ID for first process detection
         private bool isFirstInstanceDetected = false;
-        private int firstProcessID = -1;
 
         public void StartScanning()
         {
-            Process[] existingProcesses = processManager.GetProcessesByName(launcherProcessName);
+            Process[] existingProcesses = Process.GetProcessesByName(launcherProcessName);
 
             // If there is no process running, create a query and add a watcher for it
             if (existingProcesses.Length == 0)
@@ -71,7 +61,7 @@ namespace RSILauncherDetector.Components
                 {
                     try
                     {
-                        processTerminationWatcher.AddWatcherForProcessTermination(process.Id);
+                        processTerminationWatcher.WatchForProcessTermination(process.Id);
                     }
                     catch (Exception ex)
                     {
@@ -99,12 +89,12 @@ namespace RSILauncherDetector.Components
 
                 // Use the IProcessTerminationWatcher to add the process to the tracked list
                 trackedProcessIds.Add(processID);
-                processTerminationWatcher.AddWatcherForProcessTermination(processID);
+                processTerminationWatcher.WatchForProcessTermination(processID);
             }
         }
 
         // Called when a process in the system is terminated
-        public void ProcessTerminated(object sender, EventArrivedEventArgs e)
+        public void OnProcessTerminated(object sender, EventArrivedEventArgs e)
         {
             using ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject;
             if (process != null)
@@ -119,7 +109,7 @@ namespace RSILauncherDetector.Components
                     if (trackedProcessIds.Count == 0)
                     {
                         HandleAllProcessesTerminated();
-                        StartScanning();  // gameProcess and gameExe are class-level fields
+                        StartScanning();
                     }
                 }
             }
@@ -129,14 +119,13 @@ namespace RSILauncherDetector.Components
         {
             IDebugLogger.Log("All processes in the tree have been terminated.");
             trackIRController.TerminateTrackIR(trackIRProcess);
-            ResetTrackingState();
-            watcherManager.CleanupWatchers();
+            ResetProcessTracking();
+            watcherCleaner.CleanupWatchers(watchers);
         }
 
-        private void ResetTrackingState()
+        private void ResetProcessTracking()
         {
             isFirstInstanceDetected = false;
-            firstProcessID = -1;
             trackedProcessIds.Clear();
         }
     }
@@ -180,8 +169,9 @@ namespace RSILauncherDetector.Components
     {
         private readonly List<ManagementEventWatcher> watchers = [];
 
-        public void AddWatcherForProcessTermination(int processId)
+        public void WatchForProcessTermination(int processId)
         {
+            IDebugLogger.Log($"Waiting for process termination...");
             string query = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {processId}";
             using ManagementEventWatcher watcher = new();
 
@@ -189,21 +179,26 @@ namespace RSILauncherDetector.Components
             {
                 // Logic to handle process termination
                 IDebugLogger.Log($"Process with ID {processId} has terminated.");
+                watcher.Dispose();
             };
             watcher.Start();
             watchers.Add(watcher);
         }
+    }
 
-        public void CleanupWatchers()
+    [SupportedOSPlatform("windows")]
+    public class WatcherCleaner : IWatcherCleaner 
+    {
+        public void CleanupWatchers(List<IEventWatcher> watchers)
         {
-            foreach (var watcher in watchers)
+            foreach (ManagementEventWatcher watcher in watchers.Cast<ManagementEventWatcher>())
             {
-                watcher.Stop();
                 watcher.Dispose();
             }
-            watchers.Clear();
         }
     }
+
+
     [SupportedOSPlatform("windows")]
     public class TrackIRController : ITrackIRController
     {
@@ -254,6 +249,18 @@ namespace RSILauncherDetector.Components
             catch (Exception ex)
             {
                 IDebugLogger.Log($"Failed to terminate {TrackIRProcess}: {ex.Message}");
+            }
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    public class PowerModeHandler : IPowerModeHandler
+    {
+        public void OnSystemResume(object? sender, PowerModeChangedEventArgs e)
+        {
+            if (e != null && e.Mode == PowerModes.Resume)
+            {
+                Console.WriteLine("System resumed from sleep, restarting event watchers...");
             }
         }
     }

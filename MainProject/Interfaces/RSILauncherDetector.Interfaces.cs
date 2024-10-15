@@ -1,14 +1,11 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32;
+using System.Diagnostics;
 using System.Management;
 
 namespace RSILauncherDetector.Interfaces
 {
     public class RSILauncherDetector
     {
-        public interface IProcessManager
-        {
-            Process[] GetProcessesByName(string processName);
-        }
         public interface IEventWatcher
         {
             void Start();
@@ -21,7 +18,7 @@ namespace RSILauncherDetector.Interfaces
         }
         public interface IProcessTerminationWatcher
         {
-            void AddWatcherForProcessTermination(int processId);
+            void WatchForProcessTermination(int processId);
         }
 
         public interface ITrackIRController
@@ -30,9 +27,9 @@ namespace RSILauncherDetector.Interfaces
             void TerminateTrackIR(string trackIRProcess);
         }
 
-        public interface IWatcherManager
+        public interface IWatcherCleaner
         {
-            void CleanupWatchers();
+            void CleanupWatchers(List<IEventWatcher> watchers);
         }
 
         public interface IDebugLogger
@@ -42,5 +39,10 @@ namespace RSILauncherDetector.Interfaces
                 Console.WriteLine(message);
             }
         }
+        public interface IPowerModeHandler
+        {
+            void OnSystemResume(object? sender, PowerModeChangedEventArgs e);
+        }
+
     }
 }

@@ -9,7 +9,7 @@
     <BaseOutputPath>C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector</BaseOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsTestProject>false</IsTestProject>
-    <StartupObject>RSILauncherDetector.Program</StartupObject>
+    <StartupObject>RSILauncherDetector.Components.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

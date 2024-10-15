@@ -20,10 +20,10 @@ namespace RSILauncherDetector.Components
         static int firstProcessID = -1;
 
         // The processes we want to track and start / stop
-        static readonly string gameExe = "RSI Launcher.exe";
-        static readonly string gameProcess = "RSI Launcher";
-        static readonly string trackIRProcess = "TrackIR5";
-        static readonly string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe"; // Assumes default installation path of TrackIR5
+        private static readonly string launcherProcessName = "RSI Launcher";
+        private static readonly string launcherExeName = "RSI Launcher.exe";
+        private static readonly string trackIRProcess = "TrackIR5";
+        private static readonly string trackIRPath = "C:\\Program Files (x86)\\TrackIR5\\TrackIR5.exe"; // Assumes default installation path of TrackIR5
 
         // Keeping the application alive
         static readonly ManualResetEvent resetEvent = new(false);
@@ -33,15 +33,26 @@ namespace RSILauncherDetector.Components
 
         public static void Main()
         {
-            // Tries to create a new task, if none exists
-            TaskSchedulerSetup.CreateTask();
 
+            // Create an instance of the ProcessHandler with all dependencies
+            var processHandler = new ProcessHandler(
+                launcherProcessName,
+                launcherExeName,
+                trackIRPath,
+                trackIRProcess
+            );
+
+            // Start the scanning process
+            processHandler.StartScanning();
+
+
+            /*
             // Subscribe to system power mode change events
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
 
             // Starts the event watchers
             StartScanning();
-
+            */
             resetEvent.WaitOne(); // Block the main thread here
         }
 
@@ -58,13 +69,13 @@ namespace RSILauncherDetector.Components
         {
             CleanupWatchers(); // Stop and clear previous watchers
 
-            Process[] existingProcess = Process.GetProcessesByName(gameProcess);
+            Process[] existingProcess = Process.GetProcessesByName(launcherProcessName);
 
             // If there is no process running, create a query and add a watcher for it. 
             if (existingProcess.Length == 0)
             {
                 // Query for when the main process starts
-                using (ManagementEventWatcher watcher = new(new WqlEventQuery($"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{gameExe}'")))
+                using (ManagementEventWatcher watcher = new(new WqlEventQuery($"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{launcherExeName}'")))
                 {
                     // Subscribe to the process start event
                     try
@@ -72,7 +83,7 @@ namespace RSILauncherDetector.Components
                         watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
                         watcher.Start();
                         watchers.Add(watcher);
-                        IDebugLogger.Log($"Listening for {gameExe} process events. Press Enter to exit...");
+                        IDebugLogger.Log($"Listening for {launcherExeName} process events. Press Enter to exit...");
                     }
                     catch (Exception ex)
                     {
