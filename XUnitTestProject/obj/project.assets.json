@@ -4104,8 +4104,8 @@
     },
     "RSILauncherDetector/1.0.0": {
       "type": "project",
-      "path": "../RSILauncher-Detector/RSILauncherDetector.csproj",
-      "msbuildProject": "../RSILauncher-Detector/RSILauncherDetector.csproj"
+      "path": "../MainProject/RSILauncherDetector.csproj",
+      "msbuildProject": "../MainProject/RSILauncherDetector.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -4125,11 +4125,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\XUnitTestProject\\XUnitTestProject.csproj",
+      "projectUniqueName": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\XUnitTestProject\\XUnitTestProject.csproj",
       "projectName": "XUnitTestProject",
-      "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\XUnitTestProject\\XUnitTestProject.csproj",
+      "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\XUnitTestProject\\XUnitTestProject.csproj",
       "packagesPath": "C:\\Users\\mathe\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\XUnitTestProject\\obj\\",
+      "outputPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\XUnitTestProject\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4150,8 +4150,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\RSILauncherDetector.csproj": {
-              "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\RSILauncherDetector.csproj"
+            "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\RSILauncherDetector.csproj": {
+              "projectPath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\RSILauncherDetector.csproj"
             }
           }
         }

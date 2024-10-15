@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 
-namespace RSILauncherDetector
+namespace RSILauncherDetector.Components
 {
     [SupportedOSPlatform("windows")]
     public static class TaskSchedulerSetup

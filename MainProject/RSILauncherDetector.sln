@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSILauncherDetector", "RSILauncherDetector.csproj", "{B70C1765-8C09-4411-A64E-FEC143A008F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestProject", "..\XUnitTestProject\XUnitTestProject.csproj", "{C7A72A28-92A0-46B9-9427-C80D644A4BCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTestProject", "..\XUnitTestProject\XUnitTestProject.csproj", "{C7A72A28-92A0-46B9-9427-C80D644A4BCD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B70C1765-8C09-4411-A64E-FEC143A008F0} = {B70C1765-8C09-4411-A64E-FEC143A008F0}
 	EndProjectSection

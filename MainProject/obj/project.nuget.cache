@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "b8Xg6FY18p4=",
+  "dgSpecHash": "w/Uop9HbSGc=",
   "success": true,
-  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\RSILauncherDetector.csproj",
+  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\RSILauncherDetector.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mathe\\.nuget\\packages\\core.system.configuration.install\\1.1.0\\core.system.configuration.install.1.1.0.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\5.0.0\\microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512",

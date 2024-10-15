@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DjG7npvfka4=",
+  "dgSpecHash": "AwobD9sg0OA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\XUnitTestProject\\XUnitTestProject.csproj",
+  "projectFilePath": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\XUnitTestProject\\XUnitTestProject.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mathe\\.nuget\\packages\\core.system.configuration.install\\1.1.0\\core.system.configuration.install.1.1.0.nupkg.sha512",
     "C:\\Users\\mathe\\.nuget\\packages\\coverlet.collector\\6.0.2\\coverlet.collector.6.0.2.nupkg.sha512",

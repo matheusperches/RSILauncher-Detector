@@ -2,15 +2,14 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
-using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
+using static RSILauncherDetector.Interfaces.RSILauncherDetector;
 
-namespace RSILauncherDetector
+namespace RSILauncherDetector.Components
 {
     [SupportedOSPlatform("windows")]
     public static class Program
     {
-
         // A dictionary to track all processes in the tree
         static readonly HashSet<int> trackedProcessIds = [];
 
@@ -37,18 +36,30 @@ namespace RSILauncherDetector
             // Tries to create a new task, if none exists
             TaskSchedulerSetup.CreateTask();
 
-            // Starts the event watchers
-            StartScanning();
-
             // Subscribe to system power mode change events
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
+            // Starts the event watchers
+            StartScanning();
 
             resetEvent.WaitOne(); // Block the main thread here
         }
 
+        public static void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                Console.WriteLine("System resumed from sleep, restarting event watchers...");
+                StartScanning();   // Restart the watchers
+            }
+        }
+
         public static bool StartScanning()
         {
+            CleanupWatchers(); // Stop and clear previous watchers
+
             Process[] existingProcess = Process.GetProcessesByName(gameProcess);
+
             // If there is no process running, create a query and add a watcher for it. 
             if (existingProcess.Length == 0)
             {
@@ -88,20 +99,7 @@ namespace RSILauncherDetector
             Array.Clear(existingProcess);
             return true;
         }
-        public static void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
-        {
-            if (e.Mode == PowerModes.Resume)
-            {
-                Console.WriteLine("System resumed from sleep, restarting event watchers...");
-                RestartEventWatchers();
-            }
-        }
 
-        public static void RestartEventWatchers()
-        {
-            CleanupWatchers(); // Stop and clear previous watchers
-            StartScanning();   // Restart the watchers
-        }
 
         // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.
         public static void AddWatcherForProcessTermination(int processId)
@@ -143,7 +141,7 @@ namespace RSILauncherDetector
                     if (!isFirstInstanceDetected)
                     {
                         isFirstInstanceDetected = true; // Mark that the first instance has been detected
-                        DebugLogger.Log($"First process detected with ID: {firstProcessID} \nNot logging subsequent processes..."); 
+                        DebugLogger.Log($"First process detected with ID: {firstProcessID} \nNot logging subsequent processes...");
                         StartTrackIR(trackIRPath);
                     }
 
@@ -287,7 +285,7 @@ namespace RSILauncherDetector
 
     public static class DebugLogger
     {
-        [System.Diagnostics.Conditional("DEBUG")]
+        [Conditional("DEBUG")]
         public static void Log(string message)
         {
             Console.WriteLine(message);
