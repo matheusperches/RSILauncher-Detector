@@ -23,5 +23,24 @@ namespace RSILauncherDetector.Interfaces
         {
             void AddWatcherForProcessTermination(int processId);
         }
+
+        public interface ITrackIRController
+        {
+            void StartTrackIR(string trackIRProcess, string path);
+            void TerminateTrackIR(string trackIRProcess);
+        }
+
+        public interface IWatcherManager
+        {
+            void CleanupWatchers();
+        }
+
+        public interface IDebugLogger
+        {
+            public static void Log(string message)
+            {
+                Console.WriteLine(message);
+            }
+        }
     }
 }

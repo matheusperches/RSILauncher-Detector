@@ -22,21 +22,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\Program.cs",
-              "RelativeDocumentMoniker": "Components\\Program.cs",
-              "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\Program.cs",
-              "RelativeToolTip": "Components\\Program.cs",
-              "ViewState": "AgIAAIgAAAAAAAAAAAAcwJ0AAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-15T14:16:12.634Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -45,9 +32,9 @@
               "RelativeDocumentMoniker": "Interfaces\\RSILauncherDetector.Interfaces.cs",
               "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Interfaces\\RSILauncherDetector.Interfaces.cs",
               "RelativeToolTip": "Interfaces\\RSILauncherDetector.Interfaces.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAZAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAqwBIAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-15T14:11:39.155Z",
+              "WhenOpened": "2024-10-15T16:12:51.189Z",
               "EditorCaption": ""
             },
             {
@@ -58,9 +45,22 @@
               "RelativeDocumentMoniker": "Components\\ProcessHandler.cs",
               "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\ProcessHandler.cs",
               "RelativeToolTip": "Components\\ProcessHandler.cs",
-              "ViewState": "AgIAACUAAAAAAAAAAAAgwEEAAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAkwFUAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-15T14:05:56.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\Program.cs",
+              "RelativeDocumentMoniker": "Components\\Program.cs",
+              "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\Program.cs",
+              "RelativeToolTip": "Components\\Program.cs",
+              "ViewState": "AgIAAGgAAAAAAAAAAAAuwJEAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-15T14:16:12.634Z",
               "EditorCaption": ""
             }
           ]

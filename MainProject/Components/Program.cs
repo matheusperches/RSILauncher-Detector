@@ -72,11 +72,11 @@ namespace RSILauncherDetector.Components
                         watcher.EventArrived += new EventArrivedEventHandler(ProcessStarted);
                         watcher.Start();
                         watchers.Add(watcher);
-                        DebugLogger.Log($"Listening for {gameExe} process events. Press Enter to exit...");
+                        IDebugLogger.Log($"Listening for {gameExe} process events. Press Enter to exit...");
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.Log(ex.ToString());
+                        IDebugLogger.Log(ex.ToString());
                         return false;
                     }
                 };
@@ -91,7 +91,7 @@ namespace RSILauncherDetector.Components
                     }
                     catch (Exception ex)
                     {
-                        DebugLogger.Log(ex.ToString());
+                        IDebugLogger.Log(ex.ToString());
                         return false;
                     }
                 }
@@ -118,13 +118,13 @@ namespace RSILauncherDetector.Components
                 if (!isFirstInstanceDetected)
                 {
                     isFirstInstanceDetected = true; // Mark that the first instance has been detected, this block will only be executed once
-                    DebugLogger.Log($"Monitoring termination of process with ID: {processId} \nNot logging subsequent processes...");
+                    IDebugLogger.Log($"Monitoring termination of process with ID: {processId} \nNot logging subsequent processes...");
                     StartTrackIR(trackIRPath);
                 }
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"AddWatcherForProcessTermination Error: {ex.Message}");
+                IDebugLogger.Log($"AddWatcherForProcessTermination Error: {ex.Message}");
             }
         }
 
@@ -141,10 +141,9 @@ namespace RSILauncherDetector.Components
                     if (!isFirstInstanceDetected)
                     {
                         isFirstInstanceDetected = true; // Mark that the first instance has been detected
-                        DebugLogger.Log($"First process detected with ID: {firstProcessID} \nNot logging subsequent processes...");
+                        IDebugLogger.Log($"First process detected with ID: {firstProcessID} \nNot logging subsequent processes...");
                         StartTrackIR(trackIRPath);
                     }
-
                     // Add the main process to the tracked process list 
                     trackedProcessIds.Add(firstProcessID);
                     // Start watching for process termination events
@@ -166,7 +165,7 @@ namespace RSILauncherDetector.Components
                 }
                 catch (Exception ex)
                 {
-                    DebugLogger.Log($"MonitorProcessTermination Error: {ex.Message}");
+                    IDebugLogger.Log($"MonitorProcessTermination Error: {ex.Message}");
                 }
             };
         }
@@ -183,14 +182,14 @@ namespace RSILauncherDetector.Components
                     // Check if the terminated process is part of the tracked process tree
                     if (trackedProcessIds.Contains(processId))
                     {
-                        DebugLogger.Log($"Process {processId} has been terminated.");
+                        IDebugLogger.Log($"Process {processId} has been terminated.");
 
                         // Remove the process from the tracked list and terminate TrackIR5 software
                         trackedProcessIds.Remove(processId);
 
                         if (trackedProcessIds.Count == 0)
                         {
-                            DebugLogger.Log("All processes in the tree have been terminated.");
+                            IDebugLogger.Log("All processes in the tree have been terminated.");
                             TerminateTrackIR();
                             // Resetting variables
                             isFirstInstanceDetected = false;
@@ -217,17 +216,16 @@ namespace RSILauncherDetector.Components
                     {
                         trackirProc.StartInfo.FileName = programPath;
                         trackirProc.StartInfo.WorkingDirectory = Path.GetDirectoryName(programPath);
-                        trackirProc.StartInfo.UseShellExecute = false;
                         trackirProc.Start();
-                        DebugLogger.Log($"{trackIRProcess} started...");
+                        IDebugLogger.Log($"{trackIRProcess} started...");
                     };
                 }
                 else
-                    DebugLogger.Log($"An instance of {trackIRProcess} is already running.");
+                    IDebugLogger.Log($"An instance of {trackIRProcess} is already running.");
             }
             catch (Exception ex)
             {
-                DebugLogger.Log($"Failed to start task: {ex}");
+                IDebugLogger.Log($"Failed to start task: {ex}");
             }
         }
 
@@ -236,12 +234,12 @@ namespace RSILauncherDetector.Components
         {
             try
             {
-                DebugLogger.Log("Searching for TrackIR5 process...");
+                IDebugLogger.Log("Searching for TrackIR5 process...");
                 Process[] processes = Process.GetProcessesByName(trackIRProcess);
 
                 if (processes.Length == 0)
                 {
-                    DebugLogger.Log("No TrackIR5 processes found.");
+                    IDebugLogger.Log("No TrackIR5 processes found.");
                     return;
                 }
 
@@ -255,19 +253,19 @@ namespace RSILauncherDetector.Components
                     }
                     catch (Win32Exception win32Ex)
                     {
-                        DebugLogger.Log($"Failed to kill process {process.Id} due to insufficient privileges: {win32Ex.Message}");
+                        IDebugLogger.Log($"Failed to kill process {process.Id} due to insufficient privileges: {win32Ex.Message}");
                     }
                     catch (InvalidOperationException invalidOpEx)
                     {
-                        DebugLogger.Log($"Process {process.Id} has already exited: {invalidOpEx.Message}");
+                        IDebugLogger.Log($"Process {process.Id} has already exited: {invalidOpEx.Message}");
                     }
-                    DebugLogger.Log($"Process {process.Id} has been terminated.");
+                    IDebugLogger.Log($"Process {process.Id} has been terminated.");
                 }
             }
 
             catch (Exception ex)
             {
-                DebugLogger.Log($"Failed to kill task: {ex.Message}");
+                IDebugLogger.Log($"Failed to kill task: {ex.Message}");
             }
         }
         public static void CleanupWatchers()
@@ -280,15 +278,6 @@ namespace RSILauncherDetector.Components
             }
             watchers.Clear(); // Clear the list after disposing
             GC.Collect();
-        }
-    }
-
-    public static class DebugLogger
-    {
-        [Conditional("DEBUG")]
-        public static void Log(string message)
-        {
-            Console.WriteLine(message);
         }
     }
 }
