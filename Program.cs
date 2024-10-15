@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
-using RSILauncherDetectorSetup;
 
 namespace RSILauncherDetector
 {
@@ -30,13 +30,14 @@ namespace RSILauncherDetector
         static readonly ManualResetEvent resetEvent = new(false);
 
         // Maintaining a list of watchers
-        private static readonly List<ManagementEventWatcher> watchers = [];
+        internal static readonly List<ManagementEventWatcher> watchers = [];
 
         public static void Main()
         {
             // Tries to create a new task, if none exists
             TaskSchedulerSetup.CreateTask();
 
+            // Starts the event watchers
             StartScanning();
 
             // Subscribe to system power mode change events
@@ -45,7 +46,7 @@ namespace RSILauncherDetector
             resetEvent.WaitOne(); // Block the main thread here
         }
 
-        private static void StartScanning()
+        public static void StartScanning()
         {
             Process[] existingProcess = Process.GetProcessesByName(gameProcess);
             // If there is no process running, create a query and add a watcher for it. 
@@ -86,8 +87,7 @@ namespace RSILauncherDetector
             }
             Array.Clear(existingProcess);
         }
-
-        private static void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        public static void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Resume)
             {
@@ -96,14 +96,14 @@ namespace RSILauncherDetector
             }
         }
 
-        private static void RestartEventWatchers()
+        public static void RestartEventWatchers()
         {
             CleanupWatchers(); // Stop and clear previous watchers
             StartScanning();   // Restart the watchers
         }
 
         // Add a ManagementEventWatcher for process termination based on Process ID, for already running process detected upon launch.
-        private static void AddWatcherForProcessTermination(int processId)
+        public static void AddWatcherForProcessTermination(int processId)
         {
             // WMI query to detect process termination by Process ID
             using ManagementEventWatcher watcher = new(new WqlEventQuery($"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = '{processId}'"));
@@ -130,7 +130,7 @@ namespace RSILauncherDetector
         }
 
         // Monitor the process for when an instance is not detected upon launch.
-        private static void ProcessStarted(object sender, EventArrivedEventArgs e)
+        public static void ProcessStarted(object sender, EventArrivedEventArgs e)
         {
             using (ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
             {
@@ -155,7 +155,7 @@ namespace RSILauncherDetector
         }
 
         // Monitor process termination events for the tracked process
-        private static void MonitorProcessTermination(int processId)
+        public static void MonitorProcessTermination(int processId)
         {
             using (ManagementEventWatcher endWatcher = new(new WqlEventQuery($"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Handle = {processId}")))
             {
@@ -173,7 +173,7 @@ namespace RSILauncherDetector
         }
 
         // Called when a process in the system is terminated
-        private static void ProcessTerminated(object sender, EventArrivedEventArgs e)
+        public static void ProcessTerminated(object sender, EventArrivedEventArgs e)
         {
             using (ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject)
             {
@@ -206,7 +206,7 @@ namespace RSILauncherDetector
         }
 
         // This method will be called after the first instance of the tracked process is detected
-        private static void StartTrackIR(string programPath)
+        public static void StartTrackIR(string programPath)
         {
             try
             {
@@ -233,7 +233,7 @@ namespace RSILauncherDetector
         }
 
         // This method will be called when all processes in the tree are terminated
-        private static void TerminateTrackIR()
+        public static void TerminateTrackIR()
         {
             try
             {
@@ -271,7 +271,7 @@ namespace RSILauncherDetector
                 DebugLogger.Log($"Failed to kill task: {ex.Message}");
             }
         }
-        private static void CleanupWatchers()
+        public static void CleanupWatchers()
         {
             foreach (var watcher in watchers)
             {

@@ -2,12 +2,11 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Principal;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace RSILauncherDetectorSetup
+namespace RSILauncherDetector
 {
     [SupportedOSPlatform("windows")]
-    public class TaskSchedulerSetup
+    public static class TaskSchedulerSetup
     {
         static readonly string taskName = "RSILauncherDetector";
         static readonly string? exePath = Environment.ProcessPath;
@@ -106,16 +105,6 @@ namespace RSILauncherDetectorSetup
             {
                 DebugLogger.Log($"Failed to restart the application without admin privileges: {ex.Message}");
             }
-        }
-    }
-
-
-    public static class DebugLogger
-    {
-        [System.Diagnostics.Conditional("DEBUG")]
-        public static void Log(string message)
-        {
-            Console.WriteLine(message);
         }
     }
 }
