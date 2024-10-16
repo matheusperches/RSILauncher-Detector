@@ -39,10 +39,5 @@ namespace RSILauncherDetector.Interfaces
                 Console.WriteLine(message);
             }
         }
-        public interface IPowerModeHandler
-        {
-            void OnSystemResume(object? sender, PowerModeChangedEventArgs e);
-        }
-
     }
 }

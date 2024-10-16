@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualStudio.TestPlatform.TestHost;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
@@ -33,71 +33,75 @@ namespace RSILauncherDetector.Components
         private readonly HashSet<int> trackedProcessIds = []; // Dictionary to track all processes in the tree
 
         // Flag and ID for first process detection
-        private bool isFirstInstanceDetected = false;
+        private bool wasFirstInstanceDetected = false;
 
         public void StartScanning()
         {
-            Process[] existingProcesses = Process.GetProcessesByName(launcherProcessName);
-
-            // If there is no process running, create a query and add a watcher for it
-            if (existingProcesses.Length == 0)
+            try
             {
+                Process[] existingProcesses = Process.GetProcessesByName(launcherProcessName);
+
+                // Subscribing to system power change events to reset the watchers
+                SystemEvents.PowerModeChanged +=  OnSystemResume;
+
+                // Setup watcher for future process creation events
                 string query = $"SELECT * FROM __InstanceCreationEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = '{launcherExeName}'";
                 IEventWatcher watcher = watcherFactory.CreateWatcher(query);
-                try
-                {
-                    watcher.EventArrived += new EventArrivedEventHandler(OnLauncherStarted);
-                    watcher.Start();
-                    watchers.Add(watcher);
-                    IDebugLogger.Log($"Listening for {launcherExeName} process events. Press Enter to exit...");
-                }
-                catch (Exception ex)
-                {
-                    IDebugLogger.Log(ex.ToString());
-                }
-            }
-            else
-            {
+                watcher.EventArrived += new EventArrivedEventHandler(OnLauncherStarted);
+                watcher.Start();
+                watchers.Add(watcher);
+                IDebugLogger.Log($"Listening for {launcherExeName} process events. Press Enter to exit...");
+
+                // If there are existing processes, setup termination watchers for them
                 foreach (Process process in existingProcesses)
                 {
-                    try
-                    {
-                        processTerminationWatcher.WatchForProcessTermination(process.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        IDebugLogger.Log(ex.ToString());
-                    }
+                    IDebugLogger.Log($"Found {launcherExeName} process with ID {process.Id}, monitoring termination...");
+
+                    // Adding to the tracked list
+                    trackedProcessIds.Add(process.Id);
+
+                    processTerminationWatcher.WatchForProcessTermination(process.Id);
                 }
+
+                // Clean up array after use
+                Array.Clear(existingProcesses);
             }
-            Array.Clear(existingProcesses);
+            catch (Exception ex)
+            {
+                IDebugLogger.Log(ex.ToString());
+            }
+        }
+
+        private void OnSystemResume(object sender, PowerModeChangedEventArgs e)
+        {
+            IDebugLogger.Log($"System sleep detected. Resetting watchers...");
+            HandleAllProcessesTerminated();
         }
 
         private void OnLauncherStarted(object sender, EventArrivedEventArgs e)
         {
-
             using ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject;
             if (process != null)
             {
                 int processID = Convert.ToInt32(process["ProcessId"]);
 
                 // Monitoring if it's the first instance detected, then launching TrackIR...
-                if (!isFirstInstanceDetected)
+                if (!wasFirstInstanceDetected)
                 {
-                    isFirstInstanceDetected = true; // Mark that the first instance has been detected
+                    wasFirstInstanceDetected = true; // Mark that the first instance has been detected
                     IDebugLogger.Log($"First process detected with ID: {processID} \nNot logging subsequent processes...");
                     trackIRController.StartTrackIR(trackIRProcess, trackIRPath);
-
-                    // Subscribing to the ProcessTerminated event
-                    processTerminationWatcher.ProcessTerminated += () =>
-                    {
-                        trackIRController.TerminateTrackIR(trackIRProcess);
-                    };
+                    processTerminationWatcher.WatchForProcessTermination(processID);
                 }
 
                 // Adding to the tracked list
                 trackedProcessIds.Add(processID);
-                processTerminationWatcher.WatchForProcessTermination(processID);
+
+                // Subscribing to the ProcessTerminated event
+                processTerminationWatcher.ProcessTerminated += () =>
+                {
+                    OnProcessTerminated(sender, e);
+                };
             }
         }
 
@@ -116,8 +120,9 @@ namespace RSILauncherDetector.Components
 
                     if (trackedProcessIds.Count == 0)
                     {
+                        IDebugLogger.Log("All processes in the tree have been terminated.");
+                        trackIRController.TerminateTrackIR(trackIRProcess);
                         HandleAllProcessesTerminated();
-                        StartScanning();
                     }
                 }
             }
@@ -125,14 +130,13 @@ namespace RSILauncherDetector.Components
 
         private void HandleAllProcessesTerminated()
         {
-            IDebugLogger.Log("All processes in the tree have been terminated.");
             ResetProcessTracking();
             watcherCleaner.CleanupWatchers(watchers);
         }
 
         private void ResetProcessTracking()
         {
-            isFirstInstanceDetected = false;
+            wasFirstInstanceDetected = false;
             trackedProcessIds.Clear();
         }
     }
@@ -182,23 +186,37 @@ namespace RSILauncherDetector.Components
 
         public void WatchForProcessTermination(int processId)
         {
-            //Process[] watchedProcesses = Process.GetProcesses(Process.GetProcessById(processId).ProcessName);
-
-            IDebugLogger.Log("Waiting for process termination...");
             string query = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {processId}";
-            ManagementEventWatcher watcher = new(query);
-
-            watcher.EventArrived += (sender, e) =>
+            try
             {
-                // Logic to handle process termination
-                IDebugLogger.Log($"Process with ID {processId} has terminated.");
-                watcher.Dispose();
+                ManagementEventWatcher watcher = new(query);
 
-                // Raise the event to notify subscribers
-                ProcessTerminated?.Invoke();
-            };
-            watcher.Start();
-            watchers.Add(watcher);
+                watcher.EventArrived += (sender, e) =>
+                {
+                    // Extract the process object from the event arguments
+
+                    if (e.NewEvent["TargetInstance"] is ManagementBaseObject targetInstance)
+                    {
+                        // Get the process name and ID from the TargetInstance
+                        string processName = targetInstance["Name"]?.ToString() ?? "Unknown";
+                        int terminatedProcessId = Convert.ToInt32(targetInstance["ProcessId"]);
+
+                        IDebugLogger.Log($"Process '{processName}' with ID '{terminatedProcessId}' has terminated.");
+
+                        // Dispose of the watcher
+                        watcher.Dispose();
+
+                        // Raise the event to notify subscribers
+                        ProcessTerminated?.Invoke();
+                    }
+                };
+                watcher.Start();
+                watchers.Add(watcher);
+            }
+            catch (Exception ex)
+            {
+                IDebugLogger.Log($"Exception: {ex.Message}");
+            }
         }
     }
 
@@ -263,18 +281,6 @@ namespace RSILauncherDetector.Components
             catch (Exception ex)
             {
                 IDebugLogger.Log($"Failed to terminate the Process: {ex.Message}");
-            }
-        }
-    }
-
-    [SupportedOSPlatform("windows")]
-    public class PowerModeHandler : IPowerModeHandler
-    {
-        public void OnSystemResume(object? sender, PowerModeChangedEventArgs e)
-        {
-            if (e != null && e.Mode == PowerModes.Resume)
-            {
-                Console.WriteLine("System resumed from sleep, restarting event watchers...");
             }
         }
     }
