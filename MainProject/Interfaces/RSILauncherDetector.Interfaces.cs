@@ -6,6 +6,12 @@ namespace RSILauncherDetector.Interfaces
 {
     public class RSILauncherDetector
     {
+        public interface IProcessWrapper
+        {
+            Process[] GetProcessesByName(string processName);
+            Process StartProcess(string fileName, string workingDirectory);
+        }
+
         public interface IEventWatcher
         {
             void Start();

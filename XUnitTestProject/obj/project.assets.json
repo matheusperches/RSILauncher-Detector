@@ -2,6 +2,22 @@
   "version": 3,
   "targets": {
     "net8.0": {
+      "Castle.Core/5.1.1": {
+        "type": "package",
+        "dependencies": {
+          "System.Diagnostics.EventLog": "6.0.0"
+        },
+        "compile": {
+          "lib/net6.0/Castle.Core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Castle.Core.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Core.System.Configuration.Install/1.1.0": {
         "type": "package",
         "dependencies": {
@@ -435,6 +451,18 @@
           "System.Text.Encoding.CodePages": "8.0.0",
           "System.Threading.AccessControl": "8.0.0",
           "System.Web.Services.Description": "4.10.0"
+        }
+      },
+      "Moq/4.20.72": {
+        "type": "package",
+        "dependencies": {
+          "Castle.Core": "5.1.1"
+        },
+        "compile": {
+          "lib/net6.0/Moq.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Moq.dll": {}
         }
       },
       "Newtonsoft.Json/13.0.1": {
@@ -1617,6 +1645,30 @@
     }
   },
   "libraries": {
+    "Castle.Core/5.1.1": {
+      "sha512": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g==",
+      "type": "package",
+      "path": "castle.core/5.1.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ASL - Apache Software Foundation License.txt",
+        "CHANGELOG.md",
+        "LICENSE",
+        "castle-logo.png",
+        "castle.core.5.1.1.nupkg.sha512",
+        "castle.core.nuspec",
+        "lib/net462/Castle.Core.dll",
+        "lib/net462/Castle.Core.xml",
+        "lib/net6.0/Castle.Core.dll",
+        "lib/net6.0/Castle.Core.xml",
+        "lib/netstandard2.0/Castle.Core.dll",
+        "lib/netstandard2.0/Castle.Core.xml",
+        "lib/netstandard2.1/Castle.Core.dll",
+        "lib/netstandard2.1/Castle.Core.xml",
+        "readme.txt"
+      ]
+    },
     "Core.System.Configuration.Install/1.1.0": {
       "sha512": "26p4Humu3vRr5pe3bgn8QPJ3+iJdUu7OtWnRmteHszCPKjMmnYYDF4pWTcLcQd+25H70ivKCfeOR33c41ra/dg==",
       "type": "package",
@@ -2121,6 +2173,23 @@
         "PACKAGE.md",
         "microsoft.windows.compatibility.8.0.10.nupkg.sha512",
         "microsoft.windows.compatibility.nuspec"
+      ]
+    },
+    "Moq/4.20.72": {
+      "sha512": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
+      "type": "package",
+      "path": "moq/4.20.72",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net462/Moq.dll",
+        "lib/net6.0/Moq.dll",
+        "lib/netstandard2.0/Moq.dll",
+        "lib/netstandard2.1/Moq.dll",
+        "moq.4.20.72.nupkg.sha512",
+        "moq.nuspec",
+        "readme.md"
       ]
     },
     "Newtonsoft.Json/13.0.1": {
@@ -4112,6 +4181,7 @@
     "net8.0": [
       "Microsoft.NET.Test.Sdk >= 17.11.1",
       "Microsoft.Win32.SystemEvents >= 8.0.0",
+      "Moq >= 4.20.72",
       "RSILauncherDetector >= 1.0.0",
       "coverlet.collector >= 6.0.2",
       "xunit >= 2.9.2",
@@ -4178,6 +4248,10 @@
           "Microsoft.Win32.SystemEvents": {
             "target": "Package",
             "version": "[8.0.0, )"
+          },
+          "Moq": {
+            "target": "Package",
+            "version": "[4.20.72, )"
           },
           "coverlet.collector": {
             "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",

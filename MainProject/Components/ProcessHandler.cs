@@ -9,25 +9,42 @@ namespace RSILauncherDetector.Components
 {
 
     [SupportedOSPlatform("windows")]
-    public class ProcessHandler(
-    string launcherProcessName,
-    string launcherExeName,
-    string trackIRPath,
-    string trackIRProcess
-    )
+    public class ProcessHandler
     {
 
-        // Initializing the dependencies
-        private readonly WatcherFactory watcherFactory = new();
-        private readonly ProcessTerminationWatcher processTerminationWatcher = new();
-        private readonly TrackIRController trackIRController = new();
-        private readonly WatcherCleaner watcherCleaner = new();
+        // Fields for dependencies
+        private readonly WatcherFactory watcherFactory;
+        private readonly ProcessTerminationWatcher processTerminationWatcher;
+        private readonly ProcessWrapper processWrapper;
+        private readonly TrackIRController trackIRController;
+        private readonly WatcherCleaner watcherCleaner;
 
         // Other parameters
-        private readonly string launcherProcessName = launcherProcessName;
-        private readonly string launcherExeName = launcherExeName;
-        private readonly string trackIRPath = trackIRPath;
-        private readonly string trackIRProcess = trackIRProcess;
+        private readonly string launcherProcessName;
+        private readonly string launcherExeName;
+        private readonly string trackIRPath;
+        private readonly string trackIRProcess;
+
+        // Constructor
+        public ProcessHandler(
+            string launcherProcessName,
+            string launcherExeName,
+            string trackIRPath,
+            string trackIRProcess)
+        {
+            // Initialize the fields using constructor parameters
+            this.launcherProcessName = launcherProcessName;
+            this.launcherExeName = launcherExeName;
+            this.trackIRPath = trackIRPath;
+            this.trackIRProcess = trackIRProcess;
+
+            // Initialize the dependencies inside the constructor
+            watcherFactory = new WatcherFactory();
+            processTerminationWatcher = new ProcessTerminationWatcher();
+            processWrapper = new ProcessWrapper();
+            trackIRController = new TrackIRController(processWrapper);
+            watcherCleaner = new WatcherCleaner();
+        }
 
         private readonly List<IEventWatcher> watchers = []; // List of event watchrs
         private readonly HashSet<int> trackedProcessIds = []; // Dictionary to track all processes in the tree
@@ -179,7 +196,6 @@ namespace RSILauncherDetector.Components
     public class ProcessTerminationWatcher : IProcessTerminationWatcher
     {
         private readonly List<ManagementEventWatcher> watchers = [];
-
         // This method raises the event
 
         public event Action? ProcessTerminated;
@@ -234,23 +250,21 @@ namespace RSILauncherDetector.Components
 
 
     [SupportedOSPlatform("windows")]
-    public class TrackIRController : ITrackIRController
+    public class TrackIRController(Interfaces.RSILauncherDetector.IProcessWrapper processWrapper) : ITrackIRController
     {
+        private readonly IProcessWrapper processWrapper = processWrapper;
+
         public void StartTrackIR(string trackIRProcess, string path)
         {
+            string? directoryPath = Path.GetDirectoryName(path) ?? throw new ArgumentException("The provided path does not contain a valid directory.", nameof(path));
             try
             {
-                Process[] existingProcess = Process.GetProcessesByName(trackIRProcess);
+                Process[] existingProcess = processWrapper.GetProcessesByName(trackIRProcess);
                 // Checking if there is already a process running
                 if (existingProcess.Length == 0)
                 {
-                    using (Process trackirProc = new())
-                    {
-                        trackirProc.StartInfo.FileName = path;
-                        trackirProc.StartInfo.WorkingDirectory = Path.GetDirectoryName(path);
-                        trackirProc.Start();
-                        IDebugLogger.Log($"{trackIRProcess} started...");
-                    };
+                    processWrapper.StartProcess(path, directoryPath);
+                    IDebugLogger.Log($"{trackIRProcess} started...");
                 }
                 else
                     IDebugLogger.Log($"An instance of {trackIRProcess} is already running.");
@@ -267,21 +281,50 @@ namespace RSILauncherDetector.Components
             {
                 IDebugLogger.Log("Searching for TrackIR5 process...");
                 Process[] existingProcess = Process.GetProcessesByName(processName);
+
+                if (existingProcess.Length == 0)
+                {
+                    throw new InvalidOperationException($"No process found with the name {processName}.");
+                }
+
                 foreach (Process singleProcess in existingProcess)
                 {
                     singleProcess.Kill();
                     IDebugLogger.Log($"{singleProcess.ProcessName} found and terminated with ID {singleProcess.Id}.");
                 }
-
-                if (existingProcess.Length == 0)
-                {
-                    IDebugLogger.Log($"No processes found.");
-                }
             }
             catch (Exception ex)
             {
                 IDebugLogger.Log($"Failed to terminate the Process: {ex.Message}");
+                throw; // Re-throw the exception to allow the caller to handle it
             }
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    public class ProcessWrapper : IProcessWrapper
+    {
+        public Process[] GetProcessesByName(string processName)
+        {
+            return Process.GetProcessesByName(processName);
+        }
+
+        public Process StartProcess(string fileName, string workingDirectory)
+        {
+            Process proc = new();
+            proc.StartInfo.FileName = fileName;
+            proc.StartInfo.WorkingDirectory = workingDirectory;
+            proc.Start();
+            return proc;
+        }
+    }
+
+    [SupportedOSPlatform("windows")]
+    public class ConsoleDebugLogger : IDebugLogger
+    {
+        public static void Log(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }

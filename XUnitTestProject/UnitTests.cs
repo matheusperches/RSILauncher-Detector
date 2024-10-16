@@ -1,30 +1,48 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Win32;
+using Moq;
 using RSILauncherDetector.Components;
+using static RSILauncherDetector.Interfaces.RSILauncherDetector;
 
 
 namespace XUnitTestProject
 {
     [SupportedOSPlatform("windows")]
-    public class DetectorTests
+    public class RSILauncherDetectorTests
     {
-
+        // Test event on process startup detected
         [Fact]
-        public void OnPowerModeChanged_SystemResumed()
+        public void StartTrackIR_ShouldStartProcess_WhenNoProcessExists()
         {
             // Arrange
-            bool restartCalled;
-        //var eventArgs = new PowerModeChangedEventArgs(PowerModes.Resume);
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            mockProcessWrapper.Setup(p => p.GetProcessesByName(It.IsAny<string>())).Returns([]);
+
+            var mockLogger = new Mock<IDebugLogger>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
 
             // Act
-            restartCalled = Program.StartScanning();
-
-            // Call the original method after setting up the mock
-            //originalRestartWatchers?.Invoke(null, null);
+            controller.StartTrackIR("TrackIR5", "path/to/executable");
 
             // Assert
-            Assert.True(restartCalled, "Expected RestartEventWatchers to be called when system resumes.");
+            mockProcessWrapper.Verify(p => p.StartProcess(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        // Test event on processTermination
+        [Fact]
+        public void TerminateTrackIR_ShouldThrowException_WhenProcessDoesNotExist()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            mockProcessWrapper.Setup(p => p.GetProcessesByName(It.IsAny<string>())).Returns([]); // Simulate no processes found
+
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => controller.TerminateTrackIR("TrackIR5"));
+            Assert.Equal("No process found with the name TrackIR5.", exception.Message);
         }
     }
 }
