@@ -87,19 +87,17 @@ namespace RSILauncherDetector.Components
                     isFirstInstanceDetected = true; // Mark that the first instance has been detected
                     IDebugLogger.Log($"First process detected with ID: {processID} \nNot logging subsequent processes...");
                     trackIRController.StartTrackIR(trackIRProcess, trackIRPath);
+
+                    // Subscribing to the ProcessTerminated event
+                    processTerminationWatcher.ProcessTerminated += () =>
+                    {
+                        trackIRController.TerminateTrackIR(trackIRProcess);
+                    };
                 }
 
                 // Adding to the tracked list
                 trackedProcessIds.Add(processID);
                 processTerminationWatcher.WatchForProcessTermination(processID);
-
-
-                // Subscribing to the ProcessTerminated event
-                processTerminationWatcher.ProcessTerminated += (sender, processName) =>
-                {
-                    // Call the TrackIR termination when the event is triggered
-                    trackIRController.TerminateTrackIR(processName);
-                };
             }
         }
 
@@ -128,7 +126,6 @@ namespace RSILauncherDetector.Components
         private void HandleAllProcessesTerminated()
         {
             IDebugLogger.Log("All processes in the tree have been terminated.");
-            trackIRController.TerminateTrackIR(Process.GetProcesses(trackIRProcess));
             ResetProcessTracking();
             watcherCleaner.CleanupWatchers(watchers);
         }
@@ -179,22 +176,17 @@ namespace RSILauncherDetector.Components
     {
         private readonly List<ManagementEventWatcher> watchers = [];
 
-        // Define an event to notify when a process has terminated
-        public event EventHandler<Process[]>? ProcessTerminated;
-
         // This method raises the event
-        protected virtual void OnProcessTerminated(Process[] processes)
-        {
-            ProcessTerminated?.Invoke(this, processes);
-        }
+
+        public event Action? ProcessTerminated;
 
         public void WatchForProcessTermination(int processId)
         {
-            Process[] watchedProcesses = Process.GetProcesses(Process.GetProcessById(processId).ProcessName);
+            //Process[] watchedProcesses = Process.GetProcesses(Process.GetProcessById(processId).ProcessName);
 
             IDebugLogger.Log("Waiting for process termination...");
             string query = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {processId}";
-            using ManagementEventWatcher watcher = new(query);
+            ManagementEventWatcher watcher = new(query);
 
             watcher.EventArrived += (sender, e) =>
             {
@@ -203,7 +195,7 @@ namespace RSILauncherDetector.Components
                 watcher.Dispose();
 
                 // Raise the event to notify subscribers
-                OnProcessTerminated(watchedProcesses);
+                ProcessTerminated?.Invoke();
             };
             watcher.Start();
             watchers.Add(watcher);
@@ -251,25 +243,26 @@ namespace RSILauncherDetector.Components
             }
         }
 
-        public void TerminateTrackIR(Process[] process)
+        public void TerminateTrackIR(string processName)
         {
             try
             {
                 IDebugLogger.Log("Searching for TrackIR5 process...");
-                foreach (Process singleProcess in process)
+                Process[] existingProcess = Process.GetProcessesByName(processName);
+                foreach (Process singleProcess in existingProcess)
                 {
                     singleProcess.Kill();
-                    IDebugLogger.Log($"{singleProcess.ProcessName} terminated.");
+                    IDebugLogger.Log($"{singleProcess.ProcessName} found and terminated with ID {singleProcess.Id}.");
                 }
 
-                if (process.Length == 0)
+                if (existingProcess.Length == 0)
                 {
                     IDebugLogger.Log($"No processes found.");
                 }
             }
             catch (Exception ex)
             {
-                IDebugLogger.Log($"Failed to terminate the TrackIR Process: {ex.Message}");
+                IDebugLogger.Log($"Failed to terminate the Process: {ex.Message}");
             }
         }
     }

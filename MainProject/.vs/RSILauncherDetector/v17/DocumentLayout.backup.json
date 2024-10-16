@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:components\\processhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\rsilauncherdetectorroot\\rsilauncher-detector\\mainproject\\components\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:components\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\rsilauncherdetectorroot\\rsilauncher-detector\\mainproject\\interfaces\\rsilauncherdetector.interfaces.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:interfaces\\rsilauncherdetector.interfaces.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\rsilauncherdetectorroot\\rsilauncher-detector\\mainproject\\components\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|solutionrelative:components\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B70C1765-8C09-4411-A64E-FEC143A008F0}|RSILauncherDetector.csproj|c:\\users\\mathe\\desktop\\dotnet_projects\\rsilauncherdetectorroot\\rsilauncher-detector\\mainproject\\components\\createtaskscheduler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -42,13 +42,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "RSILauncherDetector.Interfaces.cs",
               "DocumentMoniker": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Interfaces\\RSILauncherDetector.Interfaces.cs",
               "RelativeDocumentMoniker": "Interfaces\\RSILauncherDetector.Interfaces.cs",
               "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Interfaces\\RSILauncherDetector.Interfaces.cs",
               "RelativeToolTip": "Interfaces\\RSILauncherDetector.Interfaces.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABoAAAArAAAAAAAAAA==",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAwwBoAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-15T16:12:51.189Z",
               "EditorCaption": ""
@@ -61,14 +61,14 @@
               "RelativeDocumentMoniker": "Components\\ProcessHandler.cs",
               "ToolTip": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\ProcessHandler.cs",
               "RelativeToolTip": "Components\\ProcessHandler.cs",
-              "ViewState": "AgIAAEYAAAAAAAAAAAAAAFwAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAEIAAAAAAAAAAADwv1gAAABQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-15T14:05:56.189Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\mathe\\Desktop\\dotnet_projects\\RSILauncherDetectorRoot\\RSILauncher-Detector\\MainProject\\Components\\Program.cs",
               "RelativeDocumentMoniker": "Components\\Program.cs",
@@ -76,8 +76,7 @@
               "RelativeToolTip": "Components\\Program.cs",
               "ViewState": "AgIAABEAAAAAAAAAAAAQwBYAAABMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-15T14:16:12.634Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-15T14:16:12.634Z"
             }
           ]
         }
