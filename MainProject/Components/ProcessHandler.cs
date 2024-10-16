@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
@@ -74,6 +75,7 @@ namespace RSILauncherDetector.Components
 
         private void OnLauncherStarted(object sender, EventArrivedEventArgs e)
         {
+
             using ManagementBaseObject? process = e.NewEvent["TargetInstance"] as ManagementBaseObject;
             if (process != null)
             {
@@ -84,12 +86,20 @@ namespace RSILauncherDetector.Components
                 {
                     isFirstInstanceDetected = true; // Mark that the first instance has been detected
                     IDebugLogger.Log($"First process detected with ID: {processID} \nNot logging subsequent processes...");
-                    trackIRController.StartTrackIR(trackIRProcess,trackIRPath);
+                    trackIRController.StartTrackIR(trackIRProcess, trackIRPath);
                 }
 
-                // Use the IProcessTerminationWatcher to add the process to the tracked list
+                // Adding to the tracked list
                 trackedProcessIds.Add(processID);
                 processTerminationWatcher.WatchForProcessTermination(processID);
+
+
+                // Subscribing to the ProcessTerminated event
+                processTerminationWatcher.ProcessTerminated += (sender, processName) =>
+                {
+                    // Call the TrackIR termination when the event is triggered
+                    trackIRController.TerminateTrackIR(processName);
+                };
             }
         }
 
@@ -118,7 +128,7 @@ namespace RSILauncherDetector.Components
         private void HandleAllProcessesTerminated()
         {
             IDebugLogger.Log("All processes in the tree have been terminated.");
-            trackIRController.TerminateTrackIR(trackIRProcess);
+            trackIRController.TerminateTrackIR(Process.GetProcesses(trackIRProcess));
             ResetProcessTracking();
             watcherCleaner.CleanupWatchers(watchers);
         }
@@ -169,9 +179,20 @@ namespace RSILauncherDetector.Components
     {
         private readonly List<ManagementEventWatcher> watchers = [];
 
+        // Define an event to notify when a process has terminated
+        public event EventHandler<Process[]>? ProcessTerminated;
+
+        // This method raises the event
+        protected virtual void OnProcessTerminated(Process[] processes)
+        {
+            ProcessTerminated?.Invoke(this, processes);
+        }
+
         public void WatchForProcessTermination(int processId)
         {
-            IDebugLogger.Log($"Waiting for process termination...");
+            Process[] watchedProcesses = Process.GetProcesses(Process.GetProcessById(processId).ProcessName);
+
+            IDebugLogger.Log("Waiting for process termination...");
             string query = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {processId}";
             using ManagementEventWatcher watcher = new(query);
 
@@ -180,7 +201,9 @@ namespace RSILauncherDetector.Components
                 // Logic to handle process termination
                 IDebugLogger.Log($"Process with ID {processId} has terminated.");
                 watcher.Dispose();
-                // Trigger TrackIR process termination... 
+
+                // Raise the event to notify subscribers
+                OnProcessTerminated(watchedProcesses);
             };
             watcher.Start();
             watchers.Add(watcher);
@@ -203,7 +226,6 @@ namespace RSILauncherDetector.Components
     [SupportedOSPlatform("windows")]
     public class TrackIRController : ITrackIRController
     {
-
         public void StartTrackIR(string trackIRProcess, string path)
         {
             try
@@ -229,27 +251,25 @@ namespace RSILauncherDetector.Components
             }
         }
 
-        public void TerminateTrackIR(string TrackIRProcess)
+        public void TerminateTrackIR(Process[] process)
         {
             try
             {
                 IDebugLogger.Log("Searching for TrackIR5 process...");
-
-                var trackIRProcesses = Process.GetProcessesByName(TrackIRProcess);
-                foreach (var process in trackIRProcesses)
+                foreach (Process singleProcess in process)
                 {
-                    process.Kill();
-                    IDebugLogger.Log($"{TrackIRProcess} process with ID {process.Id} terminated.");
+                    singleProcess.Kill();
+                    IDebugLogger.Log($"{singleProcess.ProcessName} terminated.");
                 }
 
-                if (trackIRProcesses.Length == 0)
+                if (process.Length == 0)
                 {
-                    IDebugLogger.Log($"No {TrackIRProcess} processes found.");
+                    IDebugLogger.Log($"No processes found.");
                 }
             }
             catch (Exception ex)
             {
-                IDebugLogger.Log($"Failed to terminate {TrackIRProcess}: {ex.Message}");
+                IDebugLogger.Log($"Failed to terminate the TrackIR Process: {ex.Message}");
             }
         }
     }
