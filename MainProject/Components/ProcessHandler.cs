@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
 using static RSILauncherDetector.Interfaces.RSILauncherDetector;
-using Components = RSILauncherDetector.Components;
 
 namespace RSILauncherDetector.Components
 {
@@ -16,11 +15,12 @@ namespace RSILauncherDetector.Components
     string trackIRProcess
     )
     {
-        // Declare private fields for dependencies
-        private readonly Components.WatcherFactory watcherFactory = new();
-        private readonly Components.ProcessTerminationWatcher processTerminationWatcher = new();
-        private readonly Components.TrackIRController trackIRController = new();
-        private readonly Components.WatcherCleaner watcherCleaner = new();
+
+        // Initializing the dependencies
+        private readonly WatcherFactory watcherFactory = new();
+        private readonly ProcessTerminationWatcher processTerminationWatcher = new();
+        private readonly TrackIRController trackIRController = new();
+        private readonly WatcherCleaner watcherCleaner = new();
 
         // Other parameters
         private readonly string launcherProcessName = launcherProcessName;
@@ -28,8 +28,8 @@ namespace RSILauncherDetector.Components
         private readonly string trackIRPath = trackIRPath;
         private readonly string trackIRProcess = trackIRProcess;
 
-        private readonly List<IEventWatcher> watchers = []; // A list of event watchrs
-        private readonly HashSet<int> trackedProcessIds = []; // A dictionary to track all processes in the tree
+        private readonly List<IEventWatcher> watchers = []; // List of event watchrs
+        private readonly HashSet<int> trackedProcessIds = []; // Dictionary to track all processes in the tree
 
         // Flag and ID for first process detection
         private bool isFirstInstanceDetected = false;
@@ -173,13 +173,14 @@ namespace RSILauncherDetector.Components
         {
             IDebugLogger.Log($"Waiting for process termination...");
             string query = $"SELECT * FROM __InstanceDeletionEvent WITHIN 5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {processId}";
-            using ManagementEventWatcher watcher = new();
+            using ManagementEventWatcher watcher = new(query);
 
             watcher.EventArrived += (sender, e) =>
             {
                 // Logic to handle process termination
                 IDebugLogger.Log($"Process with ID {processId} has terminated.");
                 watcher.Dispose();
+                // Trigger TrackIR process termination... 
             };
             watcher.Start();
             watchers.Add(watcher);
