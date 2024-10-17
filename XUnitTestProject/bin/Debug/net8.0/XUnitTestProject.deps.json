@@ -1246,12 +1246,10 @@
       "RSILauncherDetector/1.0.0": {
         "dependencies": {
           "Core.System.Configuration.Install": "1.1.0",
-          "Microsoft.NET.Test.Sdk": "17.11.1",
           "Microsoft.Windows.Compatibility": "8.0.10",
           "System.Management": "8.0.0",
           "System.ServiceProcess.ServiceController": "8.0.1",
-          "TaskScheduler": "2.11.0",
-          "xunit": "2.9.2"
+          "TaskScheduler": "2.11.0"
         },
         "runtime": {
           "RSILauncherDetector.dll": {

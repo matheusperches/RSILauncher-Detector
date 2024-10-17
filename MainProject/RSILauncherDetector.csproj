@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,6 +9,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsTestProject>false</IsTestProject>
     <StartupObject>RSILauncherDetector.Components.Program</StartupObject>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,8 +18,6 @@
     <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.1" />
     <PackageReference Include="TaskScheduler" Version="2.11.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
   </ItemGroup>
 
 </Project>

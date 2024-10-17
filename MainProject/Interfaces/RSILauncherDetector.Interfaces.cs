@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Management;
 
 namespace RSILauncherDetector.Interfaces

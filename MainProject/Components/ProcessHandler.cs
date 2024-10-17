@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using System;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.Versioning;
@@ -295,7 +294,7 @@ namespace RSILauncherDetector.Components
             }
             catch (Exception ex)
             {
-                IDebugLogger.Log($"Failed to terminate the Process: {ex.Message}");
+                IDebugLogger.Log($"{ex.Message}");
                 throw; // Re-throw the exception to allow the caller to handle it
             }
         }

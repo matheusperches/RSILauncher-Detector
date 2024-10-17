@@ -46,8 +46,6 @@ C:\Users\mathe\Desktop\dotnet_projects\RSILauncherDetectorRoot\RSILauncher-Detec
 C:\Users\mathe\Desktop\dotnet_projects\RSILauncherDetectorRoot\RSILauncher-Detector\obj\Debug\net8.0\RSILauncherDetector.pdb
 C:\Users\mathe\Desktop\dotnet_projects\RSILauncherDetectorRoot\RSILauncher-Detector\obj\Debug\net8.0\RSILauncherDetector.genruntimeconfig.cache
 C:\Users\mathe\Desktop\dotnet_projects\RSILauncherDetectorRoot\RSILauncher-Detector\obj\Debug\net8.0\ref\RSILauncherDetector.dll
-C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\Debug\net8.0\testhost.dll
-C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\Debug\net8.0\testhost.exe
 C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\Debug\net8.0\RSILauncherDetector.exe
 C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\Debug\net8.0\RSILauncherDetector.deps.json
 C:\Users\mathe\Desktop\dotnet_projects\Apps\RSILauncher-Detector\Release\RSILauncherDetector\Debug\net8.0\RSILauncherDetector.runtimeconfig.json

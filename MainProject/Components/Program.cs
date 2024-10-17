@@ -16,6 +16,8 @@ namespace RSILauncherDetector.Components
         static readonly ManualResetEvent resetEvent = new(false);
         public static void Main()
         {
+            // Tries to create a new task, if none exists
+            TaskSchedulerSetup.CreateTask();
 
             // Create an instance of the ProcessHandler with all dependencies
             var processHandler = new ProcessHandler(

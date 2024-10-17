@@ -42,7 +42,43 @@ namespace XUnitTestProject
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => controller.TerminateTrackIR("TrackIR5"));
-            Assert.Equal("No process found with the name TrackIR5.", exception.Message);
+            Assert.Equal($"No process found with the name TrackIR5.", exception.Message);
+        }
+        [Fact]
+        public void StartTrackIR_ShouldStartProcess_WhenNoInstanceIsRunning()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+            string trackIRProcess = "TrackIR";
+            string path = "C:\\Dummy\\TrackIR.exe";
+
+            mockProcessWrapper.Setup(m => m.GetProcessesByName(trackIRProcess)).Returns([]); // No process running
+            mockProcessWrapper.Setup(m => m.StartProcess(path, It.IsAny<string>())).Returns(new Process());
+
+            // Act
+            controller.StartTrackIR(trackIRProcess, path);
+
+            // Assert
+            mockProcessWrapper.Verify(m => m.StartProcess(path, It.IsAny<string>()), Times.Once);
+        }
+        [Fact]
+        public void StartTrackIR_ShouldNotStartProcess_WhenInstanceIsAlreadyRunning()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+            string trackIRProcess = "TrackIR";
+            string path = "C:\\Dummy\\TrackIR.exe";
+
+            var mockProcess = new Mock<Process>();
+            mockProcessWrapper.Setup(m => m.GetProcessesByName(trackIRProcess)).Returns([mockProcess.Object]); // One process running
+
+            // Act
+            controller.StartTrackIR(trackIRProcess, path);
+
+            // Assert
+            mockProcessWrapper.Verify(m => m.StartProcess(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }

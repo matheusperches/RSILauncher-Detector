@@ -53,10 +53,6 @@
               "target": "Package",
               "version": "[1.1.0, )"
             },
-            "Microsoft.NET.Test.Sdk": {
-              "target": "Package",
-              "version": "[17.11.1, )"
-            },
             "Microsoft.Windows.Compatibility": {
               "target": "Package",
               "version": "[8.0.10, )"
@@ -72,10 +68,6 @@
             "TaskScheduler": {
               "target": "Package",
               "version": "[2.11.0, )"
-            },
-            "xunit": {
-              "target": "Package",
-              "version": "[2.9.2, )"
             }
           },
           "imports": [
