@@ -12,7 +12,8 @@ namespace XUnitTestProject
     [SupportedOSPlatform("windows")]
     public class RSILauncherDetectorTests
     {
-        // Test event on process startup detected
+
+        // Functionality tests
         [Fact]
         public void StartTrackIR_ShouldStartProcess_WhenNoProcessExists()
         {
@@ -24,13 +25,11 @@ namespace XUnitTestProject
             var controller = new TrackIRController(mockProcessWrapper.Object);
 
             // Act
-            controller.StartTrackIR("TrackIR5", "path/to/executable");
+            controller.StartTrackIR("TrackIR5", "path\\to\\executable");
 
             // Assert
             mockProcessWrapper.Verify(p => p.StartProcess(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
-
-        // Test event on processTermination
         [Fact]
         public void TerminateTrackIR_ShouldThrowException_WhenProcessDoesNotExist()
         {
@@ -79,6 +78,50 @@ namespace XUnitTestProject
 
             // Assert
             mockProcessWrapper.Verify(m => m.StartProcess(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        // Edge case test: Test that the method throws an exception when an invalid path is provided
+        [Fact]
+        public void StartTrackIR_ShouldThrowException_WhenPathIsInvalid()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => controller.StartTrackIR("TrackIR5", "invalidPath"));
+        }
+
+        // Edge case test: Test that the method handles null values properly:
+        [Fact]
+        public void StartTrackIR_ShouldThrowException_WhenProcessNameIsNull()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => controller.StartTrackIR(null!, "C:\\path\\to\\trackir.exe"));
+        }
+
+        // Testing the flow of start and terminate process
+        [Fact]
+        public void ProcessHandler_ShouldStartAndTerminateProcess()
+        {
+            // Arrange
+            var mockProcessWrapper = new Mock<IProcessWrapper>();
+            var controller = new TrackIRController(mockProcessWrapper.Object);
+
+            // Simulate the process not running initially
+            mockProcessWrapper.Setup(p => p.GetProcessesByName(It.IsAny<string>())).Returns([]);
+
+            // Act
+            controller.StartTrackIR("TrackIR5", "C:\\path\\to\\TrackIR5.exe");
+            controller.TerminateTrackIR("TrackIR5");
+
+            // Assert
+            mockProcessWrapper.Verify(p => p.StartProcess(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            mockProcessWrapper.Verify(p => p.GetProcessesByName("TrackIR5"), Times.Once);
         }
     }
 }

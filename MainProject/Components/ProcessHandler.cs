@@ -255,6 +255,11 @@ namespace RSILauncherDetector.Components
 
         public void StartTrackIR(string trackIRProcess, string path)
         {
+            if (Uri.IsWellFormedUriString(path, UriKind.RelativeOrAbsolute))
+                throw new ArgumentException("Invalid path detected.");
+
+            ArgumentNullException.ThrowIfNull(trackIRProcess);
+
             string? directoryPath = Path.GetDirectoryName(path) ?? throw new ArgumentException("The provided path does not contain a valid directory.", nameof(path));
             try
             {
@@ -270,7 +275,7 @@ namespace RSILauncherDetector.Components
             }
             catch (Exception ex)
             {
-                IDebugLogger.Log($"Failed to start task: {ex}");
+                IDebugLogger.Log($"{ex}");
             }
         }
 
@@ -283,7 +288,8 @@ namespace RSILauncherDetector.Components
 
                 if (existingProcess.Length == 0)
                 {
-                    throw new InvalidOperationException($"No process found with the name {processName}.");
+                    IDebugLogger.Log($"No processes found with the name {processName}.");
+                    return; // Exit early if no processes found
                 }
 
                 foreach (Process singleProcess in existingProcess)
